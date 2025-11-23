@@ -1,0 +1,9 @@
+FROM node AS development
+
+WORKDIR /Economy_scale
+
+COPY package*.json .
+
+RUN npm install
+
+COPY . .

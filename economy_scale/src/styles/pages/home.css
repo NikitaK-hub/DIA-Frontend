@@ -1,0 +1,90 @@
+.home-page {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    min-height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.home-page .display-5 {
+    margin-top: 10 rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.home-page .text-muted {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+.home-page .card {
+    transition: transform 0.2s ease-in-out;
+    border: 1px solid #e9ecef;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.home-page .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.home-page .card-title {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.home-page .card-text {
+    color: #6c757d;
+    line-height: 1.5;
+}
+
+.home-page .btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    font-weight: 500;
+    padding: 0.5rem 2rem;
+}
+
+.home-page .btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+.home-page .btn-primary {
+    padding: 0.5rem 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .home-page {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        min-height: calc(100vh - 70px);
+    }
+
+    .home-page .display-5 {
+        font-size: 1.75rem;
+    }
+
+    .home-page .text-muted {
+        font-size: 1rem;
+    }
+
+    .home-page .card {
+        max-width: 100%;
+    }
+}
+
+.custom-go-btn {
+    color: #1e7e34 !important;
+    background-color: transparent !important;
+    border-color: #1e7e34 !important;
+}
+
+.custom-go-btn:hover {
+    color: white !important;
+    background-color: #1e7e34 !important;
+}
