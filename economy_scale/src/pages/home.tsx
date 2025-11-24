@@ -23,7 +23,7 @@ export const HomePage: FC = () => {
               <Card.Text className="mb-3">
                 Просмотрите все издержки и оцените их стоимость в зависимости от масштаба производства.
               </Card.Text>
-              <Link to={ROUTES.STAGES}>
+              <Link to={ROUTES.COSTS}>
               <Button 
                 className="costs_button"
               >

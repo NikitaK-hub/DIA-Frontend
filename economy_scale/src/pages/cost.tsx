@@ -73,7 +73,7 @@ export const CostPage: React.FC = () => {
   return (
     <div className="cost">
       <div className="class">
-        <div className="card">
+        <div className="card1">
           <h3>{cost.title}</h3>
           <img 
             src={cost.image_url} 

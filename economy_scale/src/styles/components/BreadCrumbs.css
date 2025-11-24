@@ -7,7 +7,7 @@
     padding: 0;
     margin: 0;
     font-size: var(--medium-font-size);
-    gap: 8px;
+    gap: 7px;
 }
 
 .breadCrumbItem {

@@ -8,7 +8,7 @@ export const CostsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [requestCount, setRequestCount] = useState(0);
+  // const [requestCount, setRequestCount] = useState(0);
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -43,16 +43,16 @@ export const CostsPage: React.FC = () => {
     navigate(`?query=${encodeURIComponent(searchQuery)}`);
   };
 
-  const handleAddToRequest = async (costId: number) => {
-    try {
-      // Здесь будет логика добавления в заявку
-      console.log(`Добавление издержки ${costId} в заявку`);
-      setRequestCount(prev => prev + 1);
-    } catch (err) {
-      console.error("Ошибка добавления в заявку:", err);
-      alert("Не удалось добавить в заявку");
-    }
-  };
+  // const handleAddToRequest = async (costId: number) => {
+  //   try {
+  //     // Здесь будет логика добавления в заявку
+  //     console.log(`Добавление издержки ${costId} в заявку`);
+  //     setRequestCount(prev => prev + 1);
+  //   } catch (err) {
+  //     console.error("Ошибка добавления в заявку:", err);
+  //     alert("Не удалось добавить в заявку");
+  //   }
+  // };
 
   if (loading) {
     return (
@@ -80,14 +80,12 @@ export const CostsPage: React.FC = () => {
       {/* Счетчик заявок */}
       <div className="count_request req">
         Издержки
-        <Link className="count_request" to="/request">
           <img 
             src="/request_bin.png" 
             style={{ height: '30px', width: '30px' }} 
             alt="Корзина" 
           />
-          {requestCount}
-        </Link>
+          {/* {requestCount} */}
       </div>
 
       {/* Форма поиска */}
@@ -124,17 +122,11 @@ export const CostsPage: React.FC = () => {
                 />
               </div>
               <Link 
-                to={`/cost/${cost.id}`} 
+                to={`/costs/${cost.id}`} 
                 className="card_button"
               >
                 Подробнее
               </Link>
-              <button 
-                className="card_button"
-                onClick={() => handleAddToRequest(cost.id)}
-              >
-                Добавить
-              </button>
             </div>
           ))
         ) : (

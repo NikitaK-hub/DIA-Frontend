@@ -14,13 +14,13 @@ const Header: React.FC = () => {
     const crumbs = [];
 
     if (pathnames[0] === "costs") {
-      crumbs.push({ label: "Издержки", path: ROUTES.STAGES });
+      crumbs.push({ label: "Издержки", path: ROUTES.COSTS });
 
       if (pathnames[1]) {
         const costId = Number(pathnames[1]);
         if (!isNaN(costId)) {
-          const label = costTitle || `Издержка ${costId}`;
-          crumbs.push({ label, path: location.pathname });
+          const label = costTitle || `${costId}`;
+          crumbs.push({ label, path: location.pathname });  
         }
       }
     }
