@@ -27,7 +27,7 @@ export const HomePage: FC = () => {
               <Button 
                 className="costs_button"
               >
-                Перейти к издержкам
+                Получить издержки
               </Button>
                 {/* <Button style={{color: '#000', backgroundColor: '#F4E5CF', height: '22px', width: '150px', cursor: 'pointer',}}>
                   
