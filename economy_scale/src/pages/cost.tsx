@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { getCostByID, type Costs } from "../modules/ratioAPI";
-import "../styles/global.css";
 
 export const CostPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

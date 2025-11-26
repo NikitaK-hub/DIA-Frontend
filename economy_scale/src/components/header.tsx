@@ -3,7 +3,7 @@ import { Navbar as BootstrapHeader, Nav, Container } from "react-bootstrap";
 import { Link, useLocation } from "react-router-dom";
 import { ROUTES } from "./routes";
 import { BreadCrumbs } from "./BreadCrumbs";
-import '../styles/global.css';
+import { dest_root } from "../modules/target_config";
 
 const Header: React.FC = () => {
   const location = useLocation();
@@ -42,7 +42,7 @@ const Header: React.FC = () => {
           <BootstrapHeader.Brand>
             <Container className="header">
               <Nav.Link as={Link} to="/" className="header" active={location.pathname === "/"}>
-                <img src="../public/Logo.png" />
+                <img src={`${dest_root}/public/logo.png`} />
               </Nav.Link>
               <span>Economy Scale</span>
               {crumbs.length > 0 && (

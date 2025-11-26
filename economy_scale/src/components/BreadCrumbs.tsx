@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import type { FC } from "react";
 import { ROUTES } from "./routes";
-import '../styles/global.css';
 import '../styles/components/BreadCrumbs.css'
 
 interface ICrumb {

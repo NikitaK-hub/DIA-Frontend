@@ -32,3 +32,9 @@
 .slash {
     color: #6c757d; /* серый цвет для слэша */
 }
+
+@media (max-width: 980px){
+    .breadCrumbs{
+        left: 115px;
+    }
+}
