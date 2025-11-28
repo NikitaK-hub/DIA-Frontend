@@ -1,4 +1,4 @@
-import React, { useState} from "react";
+import React from "react";
 import { Navbar as BootstrapHeader, Nav, Container } from "react-bootstrap";
 import { Link, useLocation } from "react-router-dom";
 import { ROUTES } from "./routes";
@@ -7,22 +7,23 @@ import '../styles/global.css';
 
 const Header: React.FC = () => {
   const location = useLocation();
-  const [costTitle] = useState<string | null>(null);
 
   const generateBreadcrumbs = (): { label: string; path?: string }[] => {
     const pathnames = location.pathname.split("/").filter((x) => x);
     const crumbs = [];
 
-    if (pathnames[0] === "costs") {
+    // Для главной страницы показываем только ссылку на издержки
+    if (location.pathname === "/" || location.pathname === ROUTES.HOME) {
       crumbs.push({ label: "Издержки", path: ROUTES.COSTS });
-
-      if (pathnames[1]) {
-        const costId = Number(pathnames[1]);
-        if (!isNaN(costId)) {
-          const label = costTitle || `${costId}`;
-          crumbs.push({ label, path: location.pathname });  
-        }
-      }
+    }
+    // Для страницы издержек (список)
+    else if (location.pathname === ROUTES.COSTS) {
+      crumbs.push({ label: "Издержки" });
+    }
+    // Для детальной страницы издержки
+    else if (pathnames[0] === "costs" && pathnames[1]) {
+      crumbs.push({ label: "Издержки", path: ROUTES.COSTS });
+      crumbs.push({ label: `${pathnames[1]}` });
     }
 
     return crumbs;
@@ -42,24 +43,19 @@ const Header: React.FC = () => {
           <BootstrapHeader.Brand>
             <Container className="header">
               <Nav.Link as={Link} to="/" className="header" active={location.pathname === "/"}>
-                <img src="../public/Logo.png" />
+                <img src="../public/Logo.png" alt="Logo" />
               </Nav.Link>
               <span>Economy Scale</span>
-              {crumbs.length > 0 && (
-                <Container className="breadCrumbs">
-                  <BreadCrumbs crumbs={crumbs} />
-                </Container>
-              )}
+              
+              {/* Хлебные крошки */}
+              <Container className="breadCrumbs">
+                <BreadCrumbs crumbs={crumbs} />
+              </Container>
             </Container>
           </BootstrapHeader.Brand>
           
-            <h1>
-              Экономия за счет масштаба
-            </h1>
-            <h5>
-              Расчет эффекта масштаба
-            </h5>
-
+          <h1>Экономия за счет масштаба</h1>
+          <h5>Расчет эффекта масштаба</h5>
         </Container>
       </BootstrapHeader>
     </>

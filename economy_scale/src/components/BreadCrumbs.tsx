@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import type { FC } from "react";
 import { ROUTES } from "./routes";
 import '../styles/global.css';
@@ -16,25 +16,31 @@ interface BreadCrumbsProps {
 
 export const BreadCrumbs: FC<BreadCrumbsProps> = (props) => {
   const { crumbs } = props;
+  const location = useLocation();
+  const isHomePage = location.pathname === "/" || location.pathname === ROUTES.HOME;
 
   return (
     <ul className="breadCrumbs">
       <li className="breadCrumbItem">
-        <Link to={ROUTES.HOME} className="breadCrumbLink">
-          Главная
-        </Link>
+        {isHomePage ? (
+          <span className="breadCrumbCurrent">Главная</span>
+        ) : (
+          <Link to={ROUTES.HOME} className="breadCrumbLink">
+            Главная
+          </Link>
+        )}
       </li>
       {crumbs.length > 0 &&
         crumbs.map((crumb, index) => (
           <React.Fragment key={index}>
             <li className="slash">/</li>
             <li className="breadCrumbItem">
-              {index === crumbs.length - 1 ? (
-                <span className="breadCrumbCurrent">{crumb.label}</span>
-              ) : (
-                <Link to={crumb.path || "#"} className="breadCrumbLink">
+              {crumb.path ? (
+                <Link to={crumb.path} className="breadCrumbLink">
                   {crumb.label}
                 </Link>
+              ) : (
+                <span className="breadCrumbCurrent">{crumb.label}</span>
               )}
             </li>
           </React.Fragment>
