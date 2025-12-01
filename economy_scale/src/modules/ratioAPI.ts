@@ -1,3 +1,6 @@
+import { dest_api } from "./target_config";
+import { Api } from "../modules/API";
+
 export interface Costs {
   id: number;
   title: string;
@@ -8,6 +11,15 @@ export interface Costs {
 
 export interface CostSearchResult {
   costsCount: number;
+  results: Costs[];
+}
+
+export interface CostRequestInfo {
+  request_id: number;
+  item_count: number;
+}
+
+export interface CostSearchResult {
   results: Costs[];
 }
 
@@ -152,3 +164,41 @@ export const getCostByID = async (id: number): Promise<Costs | null> => {
     return mockCost;
   }
 };
+
+export const getCostRequestInfo = async (): Promise<CostRequestInfo> => {
+  try {
+    const response = await api.costRequests.costRequestInfoList();
+    console.log("Response data:", response.data);
+    return {
+      request_id: response.data.request_id || 1,
+      item_count: response.data.item_count || 0,
+    };
+  } catch (error) {
+    console.error("API Error in getCostRequestInfo:", error);
+    return {
+      request_id: 1,
+      item_count: 0,
+    };
+  }
+};
+
+const securityWorker = async (securityData: { accessToken: string } | null) => {
+  if (securityData?.accessToken) {
+    return {
+      headers: {
+        Authorization: `Bearer ${securityData.accessToken}`,
+      },
+    };
+  }
+  return {};
+};
+
+export const api = new Api({
+  baseURL: dest_api,
+  securityWorker,
+});
+
+export interface CostRequestInfo {
+  request_id: number;
+  item_count: number;
+}

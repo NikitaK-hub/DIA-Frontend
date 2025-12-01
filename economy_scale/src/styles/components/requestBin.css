@@ -1,0 +1,40 @@
+.request-bin {
+    margin-left: 1.5rem;
+    width: 3.5rem;
+    position: relative;
+    display: inline-block;
+}
+
+.request-bin-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 3.5rem;
+}
+
+.stage-request-button {
+    width: 3.5rem;
+}
+
+.request-bin-items {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.request_bin--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
