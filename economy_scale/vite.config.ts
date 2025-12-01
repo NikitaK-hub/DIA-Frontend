@@ -1,15 +1,22 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { VitePWA } from "vite-plugin-pwa";
+import { dest_root, api_proxy_addr } from "./src/modules/target_config";
+import fs from "fs";
+import path from "path";
+import mkcert from "vite-plugin-mkcert";
 
-// https://vite.dev/config/
 export default defineConfig({
   server: {
+    https: {
+      key: fs.readFileSync(path.resolve(__dirname, "cert.key")),
+      cert: fs.readFileSync(path.resolve(__dirname, "cert.crt")),
+    },
     port: 3000,
     proxy: {
       "/api": {
-        target: "http://localhost:8080",
+        target: api_proxy_addr,
         changeOrigin: true,
-        //rewrite: (path) => path.replace(/^\/api/, ""),
         secure: false,
       },
     },
@@ -19,5 +26,43 @@ export default defineConfig({
     host: true,
     strictPort: true,
   },
-  plugins: [react()],
+  plugins: [
+    react(),
+    mkcert(),
+    VitePWA({
+      registerType: "autoUpdate",
+      devOptions: { enabled: true },
+      manifest: {
+        name: "CO2 Emission calculator",
+        short_name: "CO2 Emission",
+        start_url: "/IAD-frontend/",
+        display: "standalone",
+        background_color: "#fdfdfd",
+        theme_color: "#db4938",
+        orientation: "portrait-primary",
+        icons: [
+          {
+            src: "logo192.png",
+            type: "image/png",
+            sizes: "192x192",
+          },
+          {
+            src: "logo512.png",
+            type: "image/png",
+            sizes: "512x512",
+          },
+        ],
+        screenshots: [
+          {
+            src: "stock.jpg",
+            sizes: "612x612",
+            type: "image/jpeg",
+            form_factor: "wide",
+            label: "stock",
+          },
+        ],
+      },
+    }),
+  ],
+  base: dest_root,
 });

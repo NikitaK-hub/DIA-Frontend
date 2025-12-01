@@ -28,6 +28,7 @@ import { HomePage } from "./pages/home";
 import { CostsPage } from "./pages/costs";
 import { CostPage } from "./pages/cost";
 import "./styles/App.css";
+import { LoginPage } from "./pages/loginPage";
 
 const App: React.FC = () => {
   return (
@@ -39,6 +40,8 @@ const App: React.FC = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/costs" element={<CostsPage />} />
           <Route path="/costs/:id" element={<CostPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          {/* <Route path="/cost_request/:id" element={<CostRequestPage />} /> */}
         </Routes>
       </Container>
     </>

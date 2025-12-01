@@ -65,10 +65,6 @@ export interface HandlerLoginResponse {
   user?: HandlerUserInfo;
 }
 
-export interface HandlerLogoutRequest {
-  refresh_token?: string;
-}
-
 export interface HandlerPriceRequestToCostDetailResponse {
   cost_price?: number;
   cost_title?: string;
@@ -355,7 +351,6 @@ export class Api<
      * @name CostRequestsList
      * @summary Get cost requests
      * @request GET:/cost-requests
-     * @secure
      */
     costRequestsList: (
       query?: {
@@ -372,7 +367,6 @@ export class Api<
         path: `/cost-requests`,
         method: "GET",
         query: query,
-        secure: true,
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -682,11 +676,10 @@ export class Api<
      * @request POST:/users/logout
      * @secure
      */
-    logoutCreate: (request: HandlerLogoutRequest, params: RequestParams = {}) =>
+    logoutCreate: (params: RequestParams = {}) =>
       this.request<Record<string, any>, Record<string, any>>({
         path: `/users/logout`,
         method: "POST",
-        body: request,
         secure: true,
         type: ContentType.Json,
         format: "json",
