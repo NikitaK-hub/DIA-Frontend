@@ -33,9 +33,9 @@ export default defineConfig({
       registerType: "autoUpdate",
       devOptions: { enabled: true },
       manifest: {
-        name: "CO2 Emission calculator",
-        short_name: "CO2 Emission",
-        start_url: "/IAD-frontend/",
+        name: "Economy Scale calculator",
+        short_name: "Economy Scale",
+        start_url: "/DIA-Frontend/",
         display: "standalone",
         background_color: "#fdfdfd",
         theme_color: "#db4938",

@@ -27,42 +27,42 @@ const MOCK_STAGES: Costs[] = [
  {
 			id:    1,
 			title: "Аренда офиса",
-			image_url:   "/stock.jpg",
+			image_url:   "/DIA-Frontend/stock.jpg",
 			info:  "При расчете данной издержки стоит учитывать: стоимость аренды помещения, OPEX (операционные расходы) и т.п.",
 			type_change:  true,
 		},
 		{
 			id:    2,
 			title: "Амортизация",
-			image_url:   "/stock.jpg",
+			image_url:   "/DIA-Frontend/stock.jpg",
 			info:  "При расчете данной издержки стоит учитывать: первоначальную стоимость и срок его полезного использования.",
 			type_change:  true,
 		},
 		{
 			id:    3,
 			title: "Стоимость ПО",
-			image_url:   "/stock.jpg",
+			image_url:   "/DIA-Frontend/stock.jpg",
 			info:  "При расчете данной издержки стоит учитывать: лицензионные платежи, затраты на обновление и техническую поддержку ПО.",
 			type_change:  true,
 		},
 		{
 			id:    4,
 			title: "Расходные материалы",
-			image_url:   "/stock.jpg",
+			image_url:   "/DIA-Frontend/stock.jpg",
 			info:  "При расчете данных издержек стоит учитывать: стоимость закупки материалов и норму расхода на единицу продукции.",
 			type_change:  false,
 		},
 		{
 			id:    5,
 			title: "Заработная плата",
-			image_url:   "/stock.jpg",
+			image_url:   "/DIA-Frontend/stock.jpg",
 			info:  "При расчете данных издержек стоит учитывать: сдельная оплата труда производственных рабочих и премии.",
 			type_change:  false,
 		},
 		{
 			id:    6,
 			title: "Транспортные расходы",
-			image_url:   "/stock.jpg",
+			image_url:   "/DIA-Frontend/stock.jpg",
 			info:  "При расчете данных издержек стоит учитывать: стоимость топлива, плата за доставку, разовые затраты на доставку товара.",
 			type_change:  false,
 		},
@@ -96,7 +96,7 @@ export const getCostByName = async (
       // Ensure all costs have fallback images
       const resultsWithFallback = data.map((cost: Costs) => ({
         ...cost,
-        image_url: cost.image_url || "/stock.jpg",
+        image_url: cost.image_url || "/DIA-Frontend/stock.jpg",
       }));
       return {
         costsCount: resultsWithFallback.length,
@@ -106,7 +106,7 @@ export const getCostByName = async (
       // Ensure all costs have fallback images
       const resultsWithFallback = (data.results || []).map((cost: Costs) => ({
         ...cost,
-        image_url: cost.image_url || "/stock.jpg",
+        image_url: cost.image_url || "/DIA-Frontend/stock.jpg",
       }));
       return {
         costsCount: data.costsCount || 0,
@@ -119,7 +119,7 @@ export const getCostByName = async (
     // Ensure mock costs have fallback images
     const mockCostsWithFallback = MOCK_STAGES.map((cost) => ({
       ...cost,
-      image_url: cost.image_url || "/stock.jpg",
+      image_url: cost.image_url || "/DIA-Frontend/stock.jpg",
     }));
     return {
       costsCount: mockCostsWithFallback.length,
@@ -148,7 +148,7 @@ export const getCostByID = async (id: number): Promise<Costs | null> => {
     // Ensure image_url has fallback
     const costWithFallback = {
       ...data,
-      image_url: data.image_url || "/stock.jpg",
+      image_url: data.image_url || "/DIA-Frontend/stock.jpg",
     };
     return costWithFallback;
   } catch (error) {
@@ -158,7 +158,7 @@ export const getCostByID = async (id: number): Promise<Costs | null> => {
     if (mockCost) {
       return {
         ...mockCost,
-        image_url: mockCost.image_url || "/stock.jpg",
+        image_url: mockCost.image_url || "/DIA-Frontend/stock.jpg",
       };
     }
     return mockCost;

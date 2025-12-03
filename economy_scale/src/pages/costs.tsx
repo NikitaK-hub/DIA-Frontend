@@ -81,7 +81,7 @@ export const CostsPage: React.FC = () => {
       <div className="count_request req">
         Издержки
           <img 
-            src="/request_bin.png" 
+            src="/DIA-Frontend/request_bin.png" 
             style={{ height: '30px', width: '30px' }} 
             alt="Корзина" 
           />

@@ -43,7 +43,7 @@ const Header: React.FC = () => {
           <BootstrapHeader.Brand>
             <Container className="header">
               <Nav.Link as={Link} to="/" className="header" active={location.pathname === "/"}>
-                <img src="../public/Logo.png" alt="Logo" />
+                <img src="/DIA-Frontend/logo.png" alt="Logo" />
               </Nav.Link>
               <span>Economy Scale</span>
               
