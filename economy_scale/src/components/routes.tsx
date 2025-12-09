@@ -3,7 +3,9 @@ export const ROUTES = {
   COSTS: "/costs",
   COST: "/costs/:id",
   LOGIN: "/login",
-  STAGEREQUEST: "/cost_request/:requestId",
+  REGISTER: "/register",
+  COSTREQUEST: "/cost_request/:requestId",
+  PROFILE: "/profile",
 };
 
 export type RouteKeyType = keyof typeof ROUTES;
@@ -13,5 +15,7 @@ export const ROUTE_LABELS: { [key in RouteKeyType]: string } = {
   COSTS: "Издкржки",
   COST: "Издержка",
   LOGIN: "Авторизация",
-  STAGEREQUEST: "Заявка",
+  REGISTER: "Регистрация",
+  COSTREQUEST: "Заявка",
+  PROFILE: "Профиль",
 };

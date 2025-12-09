@@ -372,7 +372,26 @@ export class Api<
         ...params,
       }),
 
-    /**
+      /**
+     * @description Get information about current user's draft request
+     *
+     * @tags stage-requests
+     * @name StageRequestInfoList
+     * @summary Get draft request info
+     * @request GET:/stage-requests/stageRequestInfo
+     * @secure
+     */
+    costRequestInfoList: (params: RequestParams = {}) =>
+      this.request<HandlerStageRequestInfoResponse, Record<string, any>>({
+        path: `/cost-requests/costRequestInfo`,
+        method: "GET",
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+    
+      /**
      * @description Get detailed information about a specific cost request
      *
      * @tags cost-requests

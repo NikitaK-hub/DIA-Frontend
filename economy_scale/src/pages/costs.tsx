@@ -2,18 +2,28 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { getCostByName, type Costs } from "../modules/ratioAPI";
 import '../styles/global.css';
+import { useSelector, useDispatch } from "react-redux"; // Добавляем Redux хуки
+import type { RootState, AppDispatch } from "../store"; // Добавляем типы
+import { addCostToRequest } from "../store/costRequestSlice"; // Предполагаем, что у вас есть такой экшен
 
 export const CostsPage: React.FC = () => {
   const [costs, setCosts] = useState<Costs[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  // const [requestCount, setRequestCount] = useState(0);
   
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  
+  // Получаем состояние авторизации из Redux
+  const isAuthorized = useSelector((state: RootState) => state.user.isAuthorized);
+  
+  // Получаем корзину из Redux
+  const requestItems = useSelector((state: RootState) => state.costRequest.costs);
+  const requestCount = requestItems?.length || 0;
 
-  // Получаем параметр поиска из URL
+  // Получаем параметр поиска из URL - ДОБАВЬТЕ ЭТО!
   const urlParams = new URLSearchParams(location.search);
   const queryFromUrl = urlParams.get('query') || "";
 
@@ -22,7 +32,7 @@ export const CostsPage: React.FC = () => {
       try {
         setLoading(true);
         
-        // Загружаем список издердек
+        // Загружаем список издержек
         const costData = await getCostByName(queryFromUrl);
         setCosts(costData.results);
         
@@ -43,16 +53,23 @@ export const CostsPage: React.FC = () => {
     navigate(`?query=${encodeURIComponent(searchQuery)}`);
   };
 
-  // const handleAddToRequest = async (costId: number) => {
-  //   try {
-  //     // Здесь будет логика добавления в заявку
-  //     console.log(`Добавление издержки ${costId} в заявку`);
-  //     setRequestCount(prev => prev + 1);
-  //   } catch (err) {
-  //     console.error("Ошибка добавления в заявку:", err);
-  //     alert("Не удалось добавить в заявку");
-  //   }
-  // };
+   const handleAddToRequest = async (costId: number) => {
+  try {
+    // Проверяем авторизацию
+    if (!isAuthorized) {
+      navigate('/login');
+      return;
+    }
+    
+    // Диспатчим экшен добавления в корзину - передаем просто costId, а не объект
+    dispatch(addCostToRequest(costId));
+    console.log(`Издержка ${costId} добавлена в заявку`);
+    
+  } catch (err) {
+    console.error("Ошибка добавления в заявку:", err);
+    alert("Не удалось добавить в заявку");
+  }
+};
 
   if (loading) {
     return (
@@ -77,17 +94,41 @@ export const CostsPage: React.FC = () => {
 
   return (
     <div className="page-index">
-      {/* Счетчик заявок */}
+        {/* Счетчик заявок */}
       <div className="count_request req">
         Издержки
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '5px',
+          marginLeft: '10px'
+        }}>
           <img 
             src="/DIA-Frontend/request_bin.png" 
             style={{ height: '30px', width: '30px' }} 
             alt="Корзина" 
           />
-          {/* {requestCount} */}
+          {/* Отображаем счетчик для авторизованных пользователей */}
+          {isAuthorized && requestCount > 0 && (
+            <span style={{ 
+              color: '#FDF1E0', 
+              fontWeight: 'bold',
+              fontSize: '16px',
+              backgroundColor: '#145802',
+              borderRadius: '50%',
+              width: '24px',
+              height: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              lineHeight: '24px'
+            }}>
+              {requestCount}
+            </span>
+          )}
+        </div>
       </div>
-
+      
       {/* Форма поиска */}
       <form onSubmit={handleSearch}>
         <input 
@@ -127,6 +168,16 @@ export const CostsPage: React.FC = () => {
               >
                 Подробнее
               </Link>
+                {/* Кнопка "Добавить" - только для авторизованных */}
+                {isAuthorized && (
+                  <button 
+                    className="card_button"
+                    onClick={() => handleAddToRequest(cost.id)}
+                    style={{ width: '100px' }}
+                  >
+                    Добавить
+                  </button>
+                )}
             </div>
           ))
         ) : (

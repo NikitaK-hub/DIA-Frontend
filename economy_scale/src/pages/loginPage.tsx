@@ -1,7 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import type { AppDispatch, RootState } from "../store";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { loginUserAsync } from "../store/userSlice";
 import { ROUTES } from "../components/routes";
 import { Form, Button, Alert } from "react-bootstrap";
@@ -23,7 +23,7 @@ export const LoginPage: React.FC = () => {
       const result = await dispatch(loginUserAsync(formData));
 
       if (loginUserAsync.fulfilled.match(result)) {
-        navigate(ROUTES.HOME);
+        navigate(ROUTES.COSTS);
       }
     }
   };
@@ -60,7 +60,16 @@ export const LoginPage: React.FC = () => {
           </Form.Group>
           <Button variant="primary" type="submit" className="login-btn-submit">
             Войти
+            
           </Button>
+           <div className="login-footer">
+            <p className="login-footer-text">
+              Нет аккаунта?{" "}
+              <Link to={ROUTES.REGISTER} className="login-footer-link">
+                Зарегистрироваться
+              </Link>
+            </p>
+          </div>
         </Form>
       </div>
     </div>
