@@ -27,7 +27,7 @@ export const RequestBin: FC = () => {
     fetchCostRequestInfo();
   }, []);
 
-  const isDisabled = !costRequestInfo || costRequestInfo.item_count === -1;
+  const isDisabled = !costRequestInfo || costRequestInfo.item_count < 1;
 
   if (loading) {
     return (
@@ -40,7 +40,7 @@ export const RequestBin: FC = () => {
   return (
     <Link
       className={`request-bin ${isDisabled ? "request_bin--disabled" : ""}`}
-      to={isDisabled ? "#" : `/cost_request/${costRequestInfo?.request_id}`}
+      to={isDisabled ? "#" : `/cost-request/${costRequestInfo?.request_id}`}
       onClick={(e) => isDisabled && e.preventDefault()}
     >
       <img

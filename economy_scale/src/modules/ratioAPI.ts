@@ -1,5 +1,5 @@
 import { dest_api } from "./target_config";
-import { Api } from "../modules/API";
+import { Api } from "../modules/Api";
 
 export interface Costs {
   id: number;

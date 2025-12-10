@@ -15,8 +15,14 @@ export interface HandlerCostRequestDetailResponse {
   Min_volume?: number;
   created_at?: string;
   id?: number;
-  /** Ratio               float64                            `json: "Ratio"` */
   price_request_to_costs?: HandlerPriceRequestToCostDetailResponse[];
+  ratio?: number;
+  status?: number;
+}
+
+export interface HandlerCostRequestInfoResponse {
+  item_count?: number;
+  request_id?: number;
 }
 
 export interface HandlerCostResponse {
@@ -44,6 +50,7 @@ export interface HandlerCostsRequestsFilterResponse {
   Status?: number;
   UserID?: number;
   id?: number;
+  ratio?: number;
 }
 
 export interface HandlerCreateCostRequest {
@@ -66,6 +73,7 @@ export interface HandlerLoginResponse {
 }
 
 export interface HandlerPriceRequestToCostDetailResponse {
+  cost_id?: number;
   cost_price?: number;
   cost_title?: string;
   img?: string;
@@ -372,17 +380,17 @@ export class Api<
         ...params,
       }),
 
-      /**
+    /**
      * @description Get information about current user's draft request
      *
-     * @tags stage-requests
-     * @name StageRequestInfoList
+     * @tags cost-requests
+     * @name CostRequestInfoList
      * @summary Get draft request info
-     * @request GET:/stage-requests/stageRequestInfo
+     * @request GET:/cost-requests/costRequestInfo
      * @secure
      */
     costRequestInfoList: (params: RequestParams = {}) =>
-      this.request<HandlerStageRequestInfoResponse, Record<string, any>>({
+      this.request<HandlerCostRequestInfoResponse, Record<string, any>>({
         path: `/cost-requests/costRequestInfo`,
         method: "GET",
         secure: true,
@@ -390,8 +398,8 @@ export class Api<
         format: "json",
         ...params,
       }),
-    
-      /**
+
+    /**
      * @description Get detailed information about a specific cost request
      *
      * @tags cost-requests
@@ -769,7 +777,7 @@ export class Api<
       }),
 
     /**
-     * @description Create a new user account
+     * @description Create a new user account and automatically login
      *
      * @tags users
      * @name RegisterCreate
@@ -780,7 +788,7 @@ export class Api<
       request: HandlerRegisterRequest,
       params: RequestParams = {},
     ) =>
-      this.request<Record<string, any>, Record<string, any>>({
+      this.request<HandlerLoginResponse, Record<string, any>>({
         path: `/users/register`,
         method: "POST",
         body: request,

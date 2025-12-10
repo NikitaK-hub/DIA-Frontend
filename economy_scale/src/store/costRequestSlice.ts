@@ -1,3 +1,4 @@
+// store/costRequestSlice.ts
 import { api } from "../modules/ratioAPI";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
@@ -7,10 +8,19 @@ export interface Costs {
   image_url?: string;
   cost_title?: string;
   cost_id?: number;
+  cost_price?: number;
+  type_change?: boolean;
 }
 
 export interface CostRequestInfo {
-  created_at?: string | null;
+  min_volume?: number;
+  max_volume?: number;
+  createdAt?: string;
+  closedAt?: string;
+  formedAt?: string;
+  calculationResult?: number;
+  status?: number;
+  ratio?: number;
 }
 
 export interface CostRequestBundle {
@@ -19,6 +29,7 @@ export interface CostRequestBundle {
   costs: Costs[];
   requestInfo?: CostRequestInfo;
   isDraft: boolean;
+  loading?: boolean;
   error?: string | null;
 }
 
@@ -27,9 +38,12 @@ const initialState: CostRequestBundle = {
   count: NaN,
   costs: [],
   requestInfo: {
-    created_at: null,
+    min_volume: undefined,
+    max_volume: undefined,
+    createdAt: undefined,
   },
   isDraft: false,
+  loading: false,
   error: null,
 };
 
@@ -67,7 +81,8 @@ export const updateCostRequest = createAsyncThunk(
     requestInfo: CostRequestInfo;
   }) => {
     const requestParamsToSend = {
-      product_name: requestInfo.productName || undefined,
+      Min_volume: requestInfo.min_volume || undefined,
+      Max_volume: requestInfo.max_volume || undefined,
     };
     const response = await api.costRequests.costRequestsUpdate(
       requestId,
@@ -82,25 +97,18 @@ export const updateCostInRequestAsync = createAsyncThunk(
   async ({
     requestId,
     costId,
-    inputField1,
-    inputField2,
+    costPrice,
   }: {
     requestId: number;
     costId: number;
-    inputField1?: number;
-    inputField2?: number;
+    costPrice: number | undefined;
   }) => {
     const updateData: {
-      input_field_1?: number;
-      input_field_2?: number;
+      cost_price?: number;
     } = {};
 
-    if (inputField1 !== undefined) {
-      updateData.input_field_1 = inputField1;
-    }
-
-    if (inputField2 !== undefined) {
-      updateData.input_field_2 = inputField2;
+    if (costPrice !== undefined) {
+      updateData.cost_price = costPrice;
     }
 
     const response = await api.costRequestCosts.costsUpdate(
@@ -108,6 +116,14 @@ export const updateCostInRequestAsync = createAsyncThunk(
       costId,
       updateData,
     );
+    return response.data;
+  },
+);
+
+export const formCostRequestAsync = createAsyncThunk(
+  "CostRequest/formCostRequestAsync",
+  async (requestId: number) => {
+    const response = await api.costRequests.formUpdate(requestId);
     return response.data;
   },
 );
@@ -124,8 +140,7 @@ export const updateCostInCostRequest = createAsyncThunk(
     cost: Costs;
   }) => {
     const requestParamsToSend = {
-      input_field_1: cost.input_field_1 || undefined,
-      input_field_2: cost.input_field_2 || undefined,
+      cost_price: cost.cost_price || undefined,
     };
     const response = await api.costRequestCosts.costsUpdate(
       requestId,
@@ -148,31 +163,176 @@ export const deleteCostFromRequest = createAsyncThunk(
   "costRequest/deleteCostFromRequest",
   async ({ requestId, costId }: { requestId: number; costId: number }) => {
     await api.costRequestCosts.costsDelete(requestId, costId);
+    return { requestId, costId };
   },
 );
-
 
 const costRequestSlice = createSlice({
   name: "costRequest",
   initialState,
-  reducers: {},
+   reducers: {
+    setRequestData: (
+      state,
+      action: PayloadAction<Partial<CostRequestInfo>>,
+    ) => {
+      state.requestInfo = {
+        ...state.requestInfo,
+        ...action.payload,
+      };
+    },
+    setCostData: (
+      state,
+      action: PayloadAction<{
+        costId: number;
+        field: "cost_price";
+        value: number;
+      }>,
+    ) => {
+      const { costId, field, value } = action.payload;
+      const costIndex = state.costs.findIndex(
+        (cost) => cost.cost_id === costId,
+      );
+      if (costIndex !== -1) {
+        state.costs[costIndex] = {
+          ...state.costs[costIndex],
+          [field]: value,
+        };
+      }
+    },
+    // Добавляем новый редуктор для обновления стоимости
+    updateCostPrice: (
+      state,
+      action: PayloadAction<{ costId: number; costPrice: number }>
+    ) => {
+      const { costId, costPrice } = action.payload;
+      const costIndex = state.costs.findIndex(
+        (cost) => cost.cost_id === costId,
+      );
+      if (costIndex !== -1) {
+        state.costs[costIndex].cost_price = costPrice;
+      }
+    },
+    setCosts: (state, action: PayloadAction<Costs[]>) => {
+      state.costs = action.payload;
+    },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
+    },
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
+      .addCase(getCostRequest.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(getCostRequest.fulfilled, (state, action) => {
-        const { price_request_to_costs, id, created_at } =
-          action.payload;
+        const {
+          price_request_to_costs,
+          Min_volume,
+          Max_volume,
+          id,
+          created_at,
+          ratio,
+          status,
+        } = action.payload;
+        
         if (price_request_to_costs && id) {
           state.requestId = id;
           state.requestInfo = {
-            created_at: created_at,
+            createdAt: created_at,
+            max_volume: Min_volume, // Обратите внимание: возможно, здесь нужно поменять местами
+            min_volume: Max_volume,
+            ratio: ratio,
+            status: status,
           };
-          state.costs = price_request_to_costs;
+          
+          // Преобразуем данные из API в формат Costs
+          state.costs = price_request_to_costs.map((item: any) => ({
+            cost_id: item.ID_cost || item.cost_id,
+            cost_price: item.cost_price || 0,
+            id: item.ID || item.id,
+            cost_title: item.Cost?.title || "",
+            image_url: item.Cost?.image_url || "",
+            type_change: item.Cost?.type_change || false
+          }));
+          
+          state.isDraft = status === 1;
+          state.count = price_request_to_costs.length;
+        }
+        state.loading = false;
+      })
+      .addCase(getCostRequest.rejected, (state, action) => {
+        state.loading = false;
+        state.error = `Failed to fetch cost request: ${action.error.message}`;
+      })
+      .addCase(deleteCostRequest.fulfilled, (state) => {
+        state.requestId = NaN;
+        state.count = NaN;
+        state.costs = [];
+        state.isDraft = false;
+        state.requestInfo = {
+          max_volume: undefined,
+          min_volume: undefined,
+          createdAt: undefined,
+        };
+      })
+      .addCase(updateCostRequest.fulfilled, (state, action) => {
+        // Обновляем requestInfo данными с сервера
+        if (action.payload) {
+          state.requestInfo = {
+            ...state.requestInfo,
+            ...action.payload,
+          };
         }
       })
-      .addCase(getCostRequest.rejected, (state) => {
-        state.error = "Failed to fetch cost request";
+      .addCase(updateCostInCostRequest.fulfilled, () => {
+        // Можно обновить состояние при необходимости
+      })
+      .addCase(updateCostInRequestAsync.fulfilled, () => {
+        // Обновление успешно, можно обновить состояние при необходимости
+      })
+      .addCase(formCostRequestAsync.pending, (state) => {
+        state.error = undefined;
+        state.loading = true;
+      })
+      .addCase(formCostRequestAsync.fulfilled, (state) => {
+        state.isDraft = false;
+        state.error = undefined;
+        state.loading = false;
+      })
+      .addCase(formCostRequestAsync.rejected, (state, action) => {
+        state.loading = false;
+        state.error = `Failed to form cost request: ${action.error.message}`;
+      })
+      .addCase(deleteCostFromRequest.fulfilled, (state, action) => {
+        const { costId } = action.payload;
+        state.costs = state.costs.filter((cost) => cost.cost_id !== costId);
+        state.count = state.costs.length;
+      })
+      .addCase(deleteCostRequest.rejected, (state, action) => {
+        state.error = `Failed to delete cost request: ${action.error.message}`;
+      })
+      .addCase(updateCostRequest.rejected, (state, action) => {
+        state.error = `Failed to update cost request: ${action.error.message}`;
+      })
+      .addCase(updateCostInCostRequest.rejected, (state, action) => {
+        state.error = `Failed to update cost in cost request: ${action.error.message}`;
+      })
+      .addCase(updateCostInRequestAsync.rejected, (state, action) => {
+        state.error = `Failed to update cost fields: ${action.error.message}`;
       });
   },
 });
 
+export const { 
+  setRequestData, 
+  setCosts, 
+  setCostData, 
+  updateCostPrice, // Экспортируем новый экшен
+  setLoading,
+  clearError 
+} = costRequestSlice.actions;
 export default costRequestSlice.reducer;
