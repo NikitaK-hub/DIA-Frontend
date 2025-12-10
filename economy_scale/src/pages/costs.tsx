@@ -18,9 +18,7 @@ export const CostsPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   
   const isAuthorized = useSelector((state: RootState) => state.user.isAuthorized);
-  const requestItems = useSelector((state: RootState) => state.costRequest.costs);
-  const requestCount = requestItems?.length || 0;
-
+  
   const urlParams = new URLSearchParams(location.search);
   const queryFromUrl = urlParams.get('query') || "";
 
