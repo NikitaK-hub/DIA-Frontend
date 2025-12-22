@@ -13,10 +13,10 @@
 export interface HandlerCostRequestDetailResponse {
   Max_volume?: number;
   Min_volume?: number;
+  Ratio?: number;
   created_at?: string;
   id?: number;
   price_request_to_costs?: HandlerPriceRequestToCostDetailResponse[];
-  ratio?: number;
   status?: number;
 }
 
@@ -47,10 +47,10 @@ export interface HandlerCostsRequestsFilterResponse {
   Max_volume?: number;
   Min_volume?: number;
   ModeratorID?: number;
+  Ratio?: number;
   Status?: number;
   UserID?: number;
   id?: number;
-  ratio?: number;
 }
 
 export interface HandlerCreateCostRequest {
@@ -359,6 +359,7 @@ export class Api<
      * @name CostRequestsList
      * @summary Get cost requests
      * @request GET:/cost-requests
+     * @secure
      */
     costRequestsList: (
       query?: {
@@ -375,6 +376,7 @@ export class Api<
         path: `/cost-requests`,
         method: "GET",
         query: query,
+        secure: true,
         type: ContentType.Json,
         format: "json",
         ...params,

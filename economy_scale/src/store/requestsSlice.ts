@@ -8,8 +8,9 @@ export interface Request {
   createdAt?: Date;
   closedAt?: Date;
   formedAt?: Date;
-  productName?: string;
-  calculationResult?: number;
+  min_volume?: number;
+  max_volume?: number;
+  ratio?: number;
 }
 
 export interface RequestsFilter {
@@ -63,9 +64,9 @@ const requestsSlice = createSlice({
           formedAt: isEmptyDate(item.FormedAt)
             ? undefined
             : new Date(item.FormedAt || ""),
-          max_volume: item.Max_volume || undefined,
           min_volume: item.Min_volume || undefined,
-          calculationResult: item.ratio || undefined,
+          max_volume: item.Max_volume || undefined,
+          ratio: item.Ratio || undefined,
         }));
         state.count = requestsData.length;
       })

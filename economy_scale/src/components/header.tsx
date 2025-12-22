@@ -116,7 +116,7 @@ const Header: React.FC = () => {
                 </Link>
                 
                 {/* Кнопка Заявки для авторизованного пользователя */}
-                <Link to={ROUTES.REQUESTS_LIST}>
+                <Link to={ROUTES.REQUESTS}>
                   <Button className="auth-btn" variant="outline-primary">
                     Заявки
                   </Button>

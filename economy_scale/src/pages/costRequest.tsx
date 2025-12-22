@@ -17,7 +17,7 @@ import {
   formCostRequestAsync,
   updateCostPrice,
 } from "../store/costRequestSlice";
-import type { Costs, CostRequestInfo } from "../store/costRequestSlice";
+// import type { Costs, CostRequestInfo } from "../store/costRequestSlice";
 
 export const CostRequestPage: FC = () => {
   const { id } = useParams();
@@ -34,13 +34,13 @@ export const CostRequestPage: FC = () => {
     message: string;
     type: "success" | "error" | "info";
   } | null>(null);
-  const [originalCosts, setOriginalCosts] = useState<Costs[]>([]);
-  const [originalRequestInfo, setOriginalRequestInfo] = useState<CostRequestInfo | undefined>(undefined);
+  // const [originalCosts, setOriginalCosts] = useState<Costs[]>([]);
+  // const [originalRequestInfo, setOriginalRequestInfo] = useState<CostRequestInfo | undefined>(undefined);
   const [hasChanges, setHasChanges] = useState(false);
   const [minVolume, setMinVolume] = useState<number>(1);
   const [maxVolume, setMaxVolume] = useState<number>(10);
   const [scaleRatio, setScaleRatio] = useState<number | null>(null);
-  const [isCalculating, setIsCalculating] = useState(false);
+  // const [isCalculating, setIsCalculating] = useState(false);
 
   // Загружаем данные заявки
   useEffect(() => {
@@ -52,12 +52,12 @@ export const CostRequestPage: FC = () => {
             const requestData = result.payload;
             console.log('Request data from API:', requestData);
             
-            setOriginalRequestInfo({
-              ...requestInfo,
-              max_volume: requestData.Max_volume,
-              min_volume: requestData.Min_volume,
-              calculationResult: requestData.ratio,
-            });
+            // setOriginalRequestInfo({
+            //   ...requestInfo,
+            //   max_volume: requestData.Max_volume,
+            //   min_volume: requestData.Min_volume,
+            //   calculationResult: requestData.ratio,
+            // });
             
             // Устанавливаем значения для отображения
             if (requestData.Min_volume !== undefined) {
@@ -66,15 +66,15 @@ export const CostRequestPage: FC = () => {
             if (requestData.Max_volume !== undefined) {
               setMaxVolume(requestData.Max_volume);
             }
-            if (requestData.ratio !== undefined) {
-              setScaleRatio(requestData.ratio);
+            if (requestData.Ratio !== undefined) {
+              setScaleRatio(requestData.Ratio);
             }
             
             // Устанавливаем данные в Redux
             dispatch(setRequestData({
               max_volume: requestData.Max_volume,
               min_volume: requestData.Min_volume,
-              calculationResult: requestData.ratio,
+              calculationResult: requestData.Ratio,
             }));
           }
         } catch (error) {
@@ -182,48 +182,48 @@ export const CostRequestPage: FC = () => {
     }
   };
 
-  const handleCalculateScaleEffect = async () => {
-    if (minVolume >= maxVolume) {
-      setNotification({
-        message: "Максимальный объем должен быть больше минимального",
-        type: "error",
-      });
-      return;
-    }
+  // const handleCalculateScaleEffect = async () => {
+  //   if (minVolume >= maxVolume) {
+  //     setNotification({
+  //       message: "Максимальный объем должен быть больше минимального",
+  //       type: "error",
+  //     });
+  //     return;
+  //   }
 
-    setIsCalculating(true);
-    setNotification(null);
+  //   setIsCalculating(true);
+  //   setNotification(null);
 
-    try {
-      // В реальном приложении здесь будет API вызов для расчета
-      // Пока используем mock-расчет
-      await new Promise(resolve => setTimeout(resolve, 1000));
+  //   try {
+  //     // В реальном приложении здесь будет API вызов для расчета
+  //     // Пока используем mock-расчет
+  //     await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const mockRatio = parseFloat((minVolume / maxVolume * 100).toFixed(2));
-      setScaleRatio(mockRatio);
+  //     const mockRatio = parseFloat((minVolume / maxVolume * 100).toFixed(2));
+  //     setScaleRatio(mockRatio);
       
-      setNotification({
-        message: "Расчет эффекта масштаба выполнен успешно",
-        type: "success",
-      });
+  //     setNotification({
+  //       message: "Расчет эффекта масштаба выполнен успешно",
+  //       type: "success",
+  //     });
       
-      dispatch(
-        setRequestData({
-          ...requestInfo,
-          calculationResult: mockRatio,
-        }),
-      );
-      setHasChanges(true);
-    } catch (error) {
-      console.error("Ошибка при расчете:", error);
-      setNotification({
-        message: "Ошибка при расчете эффекта масштаба",
-        type: "error",
-      });
-    } finally {
-      setIsCalculating(false);
-    }
-  };
+  //     dispatch(
+  //       setRequestData({
+  //         ...requestInfo,
+  //         calculationResult: mockRatio,
+  //       }),
+  //     );
+  //     setHasChanges(true);
+  //   } catch (error) {
+  //     console.error("Ошибка при расчете:", error);
+  //     setNotification({
+  //       message: "Ошибка при расчете эффекта масштаба",
+  //       type: "error",
+  //     });
+  //   } finally {
+  //     setIsCalculating(false);
+  //   }
+  // };
 
   const handleRequestSave = async () => {
     if (id) {
@@ -315,8 +315,8 @@ export const CostRequestPage: FC = () => {
       }
     }
 
-    setOriginalCosts([...costs]);
-    setOriginalRequestInfo({ ...requestInfo });
+    // setOriginalCosts([...costs]);
+    // setOriginalRequestInfo({ ...requestInfo });
   };
 
   // const handleCancelChanges = () => {
@@ -420,14 +420,14 @@ export const CostRequestPage: FC = () => {
           </button>
         )} */}
         
-        {scaleRatio !== null && (
+        {/* {scaleRatio !== null && (
           <div className="ratio">
             Коэффициент: {scaleRatio}
             <p style={{ paddingTop: '8px' }}>
               {scaleRatio > 0 ? 'Положительный эффект масштаба' : 'Отрицательный эффект масштаба'}
             </p>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Секция с издержками */}

@@ -232,7 +232,7 @@ const costRequestSlice = createSlice({
           price_request_to_costs,
           Min_volume,
           Max_volume,
-          ratio,
+          Ratio,
           id,
           created_at,
           status,
@@ -246,8 +246,7 @@ const costRequestSlice = createSlice({
             createdAt: created_at,
             max_volume: Max_volume,
             min_volume: Min_volume,
-            ratio: ratio,
-            calculationResult: ratio,
+            ratio: Ratio,
             status: status,
           };
           

@@ -9,7 +9,7 @@ import { RegisterPage } from "./pages/registerPage";
 import { ProfilePage } from "./pages/profilePage";
 import { LoginPage } from "./pages/loginPage";
 import { CostRequestPage } from "./pages/costRequest";
-// import { RequestsListPage } from "./pages/requestsListPage";
+import { RequestsListPage } from "./pages/requestsListPage";
 import "./styles/App.css";
 
 
@@ -27,7 +27,7 @@ const App: React.FC = () => {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/cost-request/:id" element={<CostRequestPage />} />
-          {/* <Route path="/requests" element={<RequestsListPage />} /> */}
+          <Route path="/requests" element={<RequestsListPage />} />
         </Routes>
       </Container>
     </>
