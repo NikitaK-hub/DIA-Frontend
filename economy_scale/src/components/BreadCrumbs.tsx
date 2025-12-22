@@ -30,7 +30,9 @@ export const BreadCrumbs: FC<BreadCrumbsProps> = (props) => {
           </Link>
         )}
       </li>
-      {crumbs.length > 0 &&
+      
+      {/* Отображаем остальные крошки только если мы НЕ на главной странице */}
+      {!isHomePage && crumbs.length > 0 &&
         crumbs.map((crumb, index) => (
           <React.Fragment key={index}>
             <li className="slash">/</li>

@@ -31,7 +31,8 @@ const Header: React.FC = () => {
     const crumbs = [];
 
     if (location.pathname === "/" || location.pathname === ROUTES.HOME) {
-      crumbs.push({ label: "Издержки", path: ROUTES.COSTS });
+      // Главная страница - только "Главная"
+      // Возвращаем пустой массив, BreadCrumbs сам отобразит "Главная"
     }
     else if (location.pathname === ROUTES.COSTS) {
       crumbs.push({ label: "Издержки" });
@@ -39,6 +40,13 @@ const Header: React.FC = () => {
     else if (pathnames[0] === "costs" && pathnames[1]) {
       crumbs.push({ label: "Издержки", path: ROUTES.COSTS });
       crumbs.push({ label: `${pathnames[1]}` });
+    }
+    else if (pathnames[0] === "cost-request" && pathnames[1]) {
+      crumbs.push({ label: "Издержки", path: ROUTES.COSTS });
+      crumbs.push({ label: "Заявка" });
+    }
+    else if (pathnames[0] === "requests") {
+      crumbs.push({ label: "Заявки" });
     }
 
     return crumbs;
@@ -67,11 +75,11 @@ const Header: React.FC = () => {
               </Nav.Link>
               <span className="brand-title">Economy Scale</span>
             </div>
-            {crumbs.length > 0 && (
-              <div className="breadcrumbs-wrapper-left">
-                <BreadCrumbs crumbs={crumbs} />
-              </div>
-            )}
+            
+            {/* УБРАЛИ УСЛОВИЕ crumbs.length > 0, чтобы BreadCrumbs отображался всегда */}
+            <div className="breadcrumbs-wrapper-left">
+              <BreadCrumbs crumbs={crumbs} />
+            </div>
           </div>
 
           {/* Центральная часть: заголовки */}
@@ -84,17 +92,37 @@ const Header: React.FC = () => {
           <div className="header-auth-section" style={{ backgroundColor: 'transparent' }}>
             {!isAuthorized ? (
               <div className="auth-buttons" style={{ backgroundColor: 'transparent' }}>
+                <Link to={ROUTES.COSTS}>
+                  <Button className="auth-btn" variant="outline-primary">
+                    Издержки
+                  </Button>
+                </Link>
                 <Link to={ROUTES.LOGIN}>
                   <Button className="auth-btn login-btn">Войти</Button>
                 </Link>
-                <Link to={ROUTES.REGISTER}>
-                  <Button className="auth-btn register-btn" variant="outline-primary">
-                    Регистрация
-                  </Button>
-                </Link>
               </div>
             ) : (
-              <div className="user-profile-section" style={{ backgroundColor: 'transparent' }}>
+              <div className="user-profile-section" style={{ 
+                backgroundColor: 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}>
+                {/* Кнопка Издержки для авторизованного пользователя */}
+                <Link to={ROUTES.COSTS}>
+                  <Button className="auth-btn" variant="outline-primary">
+                    Издержки
+                  </Button>
+                </Link>
+                
+                {/* Кнопка Заявки для авторизованного пользователя */}
+                <Link to={ROUTES.REQUESTS_LIST}>
+                  <Button className="auth-btn" variant="outline-primary">
+                    Заявки
+                  </Button>
+                </Link>
+                
+                {/* Кнопка Выйти */}
                 <Button
                   variant="primary"
                   className="auth-btn logout-btn"
@@ -102,6 +130,8 @@ const Header: React.FC = () => {
                 >
                   Выйти
                 </Button>
+                
+                {/* Информация о пользователе */}
                 <Link to={ROUTES.PROFILE} className="user-link">
                   <div className="user-info">
                     <div className="user-avatar">

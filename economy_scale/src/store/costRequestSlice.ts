@@ -4,11 +4,11 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
 export interface Costs {
-  price?: number;
+  cost_id: number;
+  cost_price: number;
+  cost_title: string;
+  img?: string;
   image_url?: string;
-  cost_title?: string;
-  cost_id?: number;
-  cost_price?: number;
   type_change?: boolean;
 }
 
@@ -34,8 +34,8 @@ export interface CostRequestBundle {
 }
 
 const initialState: CostRequestBundle = {
-  requestId: NaN,
-  count: NaN,
+  requestId: undefined,
+  count: 0,
   costs: [],
   requestInfo: {
     min_volume: undefined,
@@ -81,8 +81,8 @@ export const updateCostRequest = createAsyncThunk(
     requestInfo: CostRequestInfo;
   }) => {
     const requestParamsToSend = {
-      Min_volume: requestInfo.min_volume || undefined,
-      Max_volume: requestInfo.max_volume || undefined,
+      Min_volume: requestInfo.min_volume,
+      Max_volume: requestInfo.max_volume,
     };
     const response = await api.costRequests.costRequestsUpdate(
       requestId,
@@ -170,7 +170,7 @@ export const deleteCostFromRequest = createAsyncThunk(
 const costRequestSlice = createSlice({
   name: "costRequest",
   initialState,
-   reducers: {
+  reducers: {
     setRequestData: (
       state,
       action: PayloadAction<Partial<CostRequestInfo>>,
@@ -199,7 +199,6 @@ const costRequestSlice = createSlice({
         };
       }
     },
-    // Добавляем новый редуктор для обновления стоимости
     updateCostPrice: (
       state,
       action: PayloadAction<{ costId: number; costPrice: number }>
@@ -233,44 +232,57 @@ const costRequestSlice = createSlice({
           price_request_to_costs,
           Min_volume,
           Max_volume,
+          ratio,
           id,
           created_at,
-          ratio,
           status,
         } = action.payload;
+        
+        console.log('getCostRequest.fulfilled:', action.payload);
         
         if (price_request_to_costs && id) {
           state.requestId = id;
           state.requestInfo = {
             createdAt: created_at,
-            max_volume: Min_volume, // Обратите внимание: возможно, здесь нужно поменять местами
-            min_volume: Max_volume,
+            max_volume: Max_volume,
+            min_volume: Min_volume,
             ratio: ratio,
+            calculationResult: ratio,
             status: status,
           };
           
           // Преобразуем данные из API в формат Costs
-          state.costs = price_request_to_costs.map((item: any) => ({
-            cost_id: item.ID_cost || item.cost_id,
-            cost_price: item.cost_price || 0,
-            id: item.ID || item.id,
-            cost_title: item.Cost?.title || "",
-            image_url: item.Cost?.image_url || "",
-            type_change: item.Cost?.type_change || false
-          }));
+          state.costs = price_request_to_costs.map((item: any) => {
+            console.log('Processing cost item:', item);
+            
+            return {
+              cost_id: item.cost_id || item.ID_cost,
+              cost_price: item.cost_price || 0,
+              cost_title: item.cost_title || '',
+              img: item.img || '',
+              image_url: item.img || item.image_url || '',
+              type_change: item.type_change || false,
+            };
+          });
           
           state.isDraft = status === 1;
           state.count = price_request_to_costs.length;
+        } else {
+          // Если нет данных, устанавливаем пустой массив
+          state.costs = [];
+          state.count = 0;
         }
         state.loading = false;
       })
       .addCase(getCostRequest.rejected, (state, action) => {
         state.loading = false;
-        state.error = `Failed to fetch cost request: ${action.error.message}`;
+        state.error = `Не удалось загрузить заявку: ${action.error.message}`;
+        state.costs = [];
+        state.count = 0;
       })
       .addCase(deleteCostRequest.fulfilled, (state) => {
-        state.requestId = NaN;
-        state.count = NaN;
+        state.requestId = undefined;
+        state.count = 0;
         state.costs = [];
         state.isDraft = false;
         state.requestInfo = {
@@ -305,7 +317,7 @@ const costRequestSlice = createSlice({
       })
       .addCase(formCostRequestAsync.rejected, (state, action) => {
         state.loading = false;
-        state.error = `Failed to form cost request: ${action.error.message}`;
+        state.error = `Не удалось сформировать заявку: ${action.error.message}`;
       })
       .addCase(deleteCostFromRequest.fulfilled, (state, action) => {
         const { costId } = action.payload;
@@ -313,16 +325,16 @@ const costRequestSlice = createSlice({
         state.count = state.costs.length;
       })
       .addCase(deleteCostRequest.rejected, (state, action) => {
-        state.error = `Failed to delete cost request: ${action.error.message}`;
+        state.error = `Не удалось удалить заявку: ${action.error.message}`;
       })
       .addCase(updateCostRequest.rejected, (state, action) => {
-        state.error = `Failed to update cost request: ${action.error.message}`;
+        state.error = `Не удалось обновить заявку: ${action.error.message}`;
       })
       .addCase(updateCostInCostRequest.rejected, (state, action) => {
-        state.error = `Failed to update cost in cost request: ${action.error.message}`;
+        state.error = `Не удалось обновить издержку в заявке: ${action.error.message}`;
       })
       .addCase(updateCostInRequestAsync.rejected, (state, action) => {
-        state.error = `Failed to update cost fields: ${action.error.message}`;
+        state.error = `Не удалось обновить стоимость издержки: ${action.error.message}`;
       });
   },
 });
@@ -331,7 +343,7 @@ export const {
   setRequestData, 
   setCosts, 
   setCostData, 
-  updateCostPrice, // Экспортируем новый экшен
+  updateCostPrice,
   setLoading,
   clearError 
 } = costRequestSlice.actions;

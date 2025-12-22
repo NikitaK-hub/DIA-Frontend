@@ -278,8 +278,6 @@ h5{
 }
 
 .input_volume{
-    border: 2px solid #145802;
-    color: #145802;
     text-align: center;
     padding-top: 5px;
     border-radius: 20px;
@@ -1559,4 +1557,244 @@ Login page styles
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+/* Стили для уменьшения изображения корзины */
+.bin-wrapper {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 10px;
+}
+
+/* Уменьшаем размер изображения корзины */
+.bin-wrapper img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+/* Дополнительные стили для счетчика корзины */
+.bin-wrapper .request-count {
+  font-size: 14px;
+  margin-left: 4px;
+}
+
+/* Стили для страницы заявки */
+.cost-request-page .calculations {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-left: 10%;
+  gap: 15px;
+  margin-bottom: 30px;
+  margin-top: 3%;
+  color: #FDF1E0;
+}
+
+.cost-request-page .volume {
+  font-size: large;
+  color: #FDF1E0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cost-request-page .volume-inputs-container {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 30px;
+  margin-top: 10px;
+}
+
+.cost-request-page .volume.input {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  color: #FDF1E0;
+  gap: 10px;
+}
+
+.cost-request-page .input_volume {
+  text-align: center;
+  border-radius: 20px;
+  width: 85px;
+  height: 40px;
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .cost-request-page .calculations {
+    margin-left: 5%;
+    align-items: center;
+  }
+  
+  .cost-request-page .volume-inputs-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    width: 100%;
+  }
+  
+  .cost-request-page .volume.input {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* Убедимся, что цвет текста для выпусков белый */
+.cost-request-page .volume.input span {
+  color: #FDF1E0 !important;
+}
+
+.cost-request-page .volume-title {
+  color: #FDF1E0 !important;
+}
+
+/* Стили для страницы заявки */
+.cost-request-page .centered-volume-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 30px;
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+}
+
+.cost-request-page .volume {
+  font-size: large;
+  color: #FDF1E0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.cost-request-page .volume-title {
+  color: #FDF1E0 !important;
+  margin-bottom: 20px;
+  font-size: 18px;
+  text-align: center;
+}
+
+.cost-request-page .volume-inputs-container {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.cost-request-page .volume.input {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #FDF1E0;
+}
+
+.cost-request-page .volume-label {
+  color: #FDF1E0;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.cost-request-page .input_volume {
+  text-align: center;
+  border-radius: 20px;
+  width: 120px;
+  height: 50px;
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #FDF1E0;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.cost-request-page .volume-input {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  border: none;
+  background: transparent;
+  font-size: 24px;
+  font-weight: 700;
+  color: #FDF1E0;
+  outline: none;
+  border-radius: 20px;
+  padding: 0 10px;
+}
+
+.cost-request-page .volume-input::placeholder {
+  color: rgba(253, 241, 224, 0.7);
+}
+
+.cost-request-page .volume-display {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #FDF1E0;
+}
+
+/* Стили для коэффициента */
+.cost-request-page .ratio {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 15px;
+  width: 200px;
+  height: 100px;
+  background-color: rgba(20, 88, 2, 0.7);
+  color: #FDF1E0;
+  border-radius: 20px;
+  font-size: large;
+  border: 2px solid #FDF1E0;
+}
+
+.cost-request-page .ratio p {
+  font-size: 14px;
+  margin-top: 5px;
+  color: #FDF1E0;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .cost-request-page .centered-volume-section {
+    max-width: 90%;
+  }
+  
+  .cost-request-page .volume-inputs-container {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .cost-request-page .volume.input {
+    width: 100%;
+  }
+  
+  .cost-request-page .input_volume {
+    width: 140px;
+    height: 55px;
+  }
+  
+  .cost-request-page .volume-input,
+  .cost-request-page .volume-display {
+    font-size: 26px;
+  }
 }

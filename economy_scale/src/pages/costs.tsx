@@ -87,7 +87,9 @@ export const CostsPage: React.FC = () => {
       {/* Счетчик заявок */}
       <div className="count_request req">
         Издержки
-        <RequestBin />
+        <div className="bin-wrapper">
+          <RequestBin />
+        </div>
       </div>
       
       {/* Форма поиска */}

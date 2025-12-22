@@ -11,7 +11,7 @@ import {
   deleteCostRequest,
   setRequestData,
   updateCostRequest,
-  setCosts,
+  // setCosts,
   deleteCostFromRequest,
   updateCostInRequestAsync,
   formCostRequestAsync,
@@ -52,8 +52,6 @@ export const CostRequestPage: FC = () => {
             const requestData = result.payload;
             console.log('Request data from API:', requestData);
             
-            // Сохраняем оригинальные данные для отмены изменений
-            setOriginalCosts([...costs]);
             setOriginalRequestInfo({
               ...requestInfo,
               max_volume: requestData.Max_volume,
@@ -321,19 +319,19 @@ export const CostRequestPage: FC = () => {
     setOriginalRequestInfo({ ...requestInfo });
   };
 
-  const handleCancelChanges = () => {
-    if (originalCosts.length > 0) {
-      dispatch(setCosts([...originalCosts]));
-    }
-    if (originalRequestInfo) {
-      dispatch(setRequestData({ ...originalRequestInfo }));
-    }
-    setNotification({
-      message: "Изменения отменены",
-      type: "info",
-    });
-    setHasChanges(false);
-  };
+  // const handleCancelChanges = () => {
+  //   if (originalCosts.length > 0) {
+  //     dispatch(setCosts([...originalCosts]));
+  //   }
+  //   if (originalRequestInfo) {
+  //     dispatch(setRequestData({ ...originalRequestInfo }));
+  //   }
+  //   setNotification({
+  //     message: "Изменения отменены",
+  //     type: "info",
+  //   });
+  //   setHasChanges(false);
+  // };
 
   if (loading) {
     return (
@@ -360,9 +358,78 @@ export const CostRequestPage: FC = () => {
   }
 
   return (
-    <div className="page-index">
-      <h1>Корзина заявок</h1>
+    <div className="page-index cost-request-page">
+      <h1>Корзина заявки</h1>
       
+      <div className="calculations centered-volume-section" style={{ marginBottom: '30px' }}>
+        <div className="volume">
+          <div className="volume-title" style={{ color: '#FDF1E0', marginBottom: '20px', textAlign: 'center' }}>
+            Укажите объем выпуска:
+          </div>
+          <div className="volume-inputs-container">
+            <div className="volume input">
+              <span className="volume-label">1-й выпуск</span>
+              <div className="input_volume">
+                {isDraft ? (
+                  <input
+                    type="number"
+                    value={minVolume}
+                    onChange={handleMinVolumeChange}
+                    min="1"
+                    className="volume-input"
+                  />
+                ) : (
+                  <div className="volume-display">
+                    {minVolume}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="volume input">
+              <span className="volume-label">2-й выпуск</span>
+              <div className="input_volume">
+                {isDraft ? (
+                  <input
+                    type="number"
+                    value={maxVolume}
+                    onChange={handleMaxVolumeChange}
+                    min={minVolume + 1}
+                    className="volume-input"
+                  />
+                ) : (
+                  <div className="volume-display">
+                    {maxVolume}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* {isDraft && (
+          <button 
+            className="button_calculate"
+            onClick={handleCalculateScaleEffect}
+            disabled={isCalculating || minVolume >= maxVolume}
+            style={{
+              opacity: isCalculating || minVolume >= maxVolume ? 0.6 : 1,
+              cursor: isCalculating || minVolume >= maxVolume ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {isCalculating ? 'Расчет...' : 'Рассчитать эффект масштаба'}
+          </button>
+        )} */}
+        
+        {scaleRatio !== null && (
+          <div className="ratio">
+            Коэффициент: {scaleRatio}
+            <p style={{ paddingTop: '8px' }}>
+              {scaleRatio > 0 ? 'Положительный эффект масштаба' : 'Отрицательный эффект масштаба'}
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* Секция с издержками */}
       <div className="request">
         {costs.length === 0 ? (
@@ -385,29 +452,33 @@ export const CostRequestPage: FC = () => {
             </button>
           </div>
         ) : (
-          costs.map((requestItem) => {
+          costs.map((requestItem, index) => {
             console.log('Rendering cost item:', requestItem);
             
-            // Проверяем, есть ли необходимые данные для отображения
-            if (!requestItem.cost_id || !requestItem.cost_title) {
-              console.warn('Missing data for cost item:', requestItem);
-              return null;
-            }
+            // Получаем данные карточки - используем поля из API ответа
+            const costTitle = requestItem.cost_title || '';
+            const costImage = requestItem.image_url || requestItem.image_url || '';
+            const costId = requestItem.cost_id || index;
+            const costPrice = requestItem.cost_price || 0;
 
             return (
-              <div key={requestItem.cost_id} className="request_conteiner">
+              <div key={costId} className="request_conteiner">
                 <div className="class center">
-                  <div className="card">
-                    <h3>{requestItem.cost_title}</h3>
-                    {requestItem.image_url && (
+                  <div className="card1">
+                    <h3>{costTitle}</h3>
+                    {costImage && (
                       <img 
-                        src={requestItem.image_url} 
-                        alt={requestItem.cost_title}
+                        src={costImage} 
+                        alt={costTitle}
                         style={{ 
                           width: '80%', 
                           height: '80%', 
                           marginTop: '3%', 
                           marginBottom: '5%' 
+                        }}
+                        onError={(e) => {
+                          // Если изображение не загружается, скрываем его
+                          (e.target as HTMLImageElement).style.display = 'none';
                         }}
                       />
                     )}
@@ -422,7 +493,7 @@ export const CostRequestPage: FC = () => {
                         {isDraft ? (
                           <input
                             type="number"
-                            value={requestItem.cost_price || ''}
+                            value={costPrice || ''}
                             onChange={(e) => handleCostPriceChange(requestItem.cost_id, e.target.value)}
                             style={{
                               width: '100%',
@@ -432,20 +503,23 @@ export const CostRequestPage: FC = () => {
                               textAlign: 'center',
                               fontSize: '25px',
                               color: '#000',
-                              outline: 'none'
+                              outline: 'none',
+                              appearance: 'textfield',
+                              WebkitAppearance: 'textfield',
+                              MozAppearance: 'textfield',
                             }}
                             min="0"
                             step="0.01"
                             placeholder="0.00"
                           />
                         ) : (
-                          requestItem.cost_price || "0.00"
+                          costPrice || "0.00"
                         )}
                       </div>
                     </div>
                     {isDraft && (
                       <img 
-                        src="DIA-Frontend/bin.png" 
+                        src="/DIA-Frontend/bin.png" 
                         style={{ 
                           height: '45px', 
                           width: '35px', 
@@ -465,110 +539,6 @@ export const CostRequestPage: FC = () => {
         )}
       </div>
 
-      {/* Секция расчетов */}
-      <div className="calculations">
-        <div className="volume">
-          Укажите объем выпуска
-          <div className="volume input">
-            1-й выпуск
-            <div className="input_volume">
-              {isDraft ? (
-                <input
-                  type="number"
-                  value={minVolume}
-                  onChange={handleMinVolumeChange}
-                  min="1"
-                  style={{
-                    width: '85px',
-                    height: '40px',
-                    textAlign: 'center',
-                    border: '2px solid #145802',
-                    borderRadius: '20px',
-                    fontSize: '20px',
-                    fontWeight: '700',
-                    color: '#145802',
-                    backgroundColor: 'transparent',
-                    outline: 'none'
-                  }}
-                />
-              ) : (
-                <div style={{
-                  width: '85px',
-                  height: '40px',
-                  textAlign: 'center',
-                  paddingTop: '5px',
-                  color: '#145802',
-                  fontSize: '20px',
-                  fontWeight: '700'
-                }}>
-                  {minVolume}
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="volume input">
-            2-й выпуск
-            <div className="input_volume">
-              {isDraft ? (
-                <input
-                  type="number"
-                  value={maxVolume}
-                  onChange={handleMaxVolumeChange}
-                  min={minVolume + 1}
-                  style={{
-                    width: '85px',
-                    height: '40px',
-                    textAlign: 'center',
-                    border: '2px solid #145802',
-                    borderRadius: '20px',
-                    fontSize: '20px',
-                    fontWeight: '700',
-                    color: '#145802',
-                    backgroundColor: 'transparent',
-                    outline: 'none'
-                  }}
-                />
-              ) : (
-                <div style={{
-                  width: '85px',
-                  height: '40px',
-                  textAlign: 'center',
-                  paddingTop: '5px',
-                  color: '#145802',
-                  fontSize: '20px',
-                  fontWeight: '700'
-                }}>
-                  {maxVolume}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        {isDraft && (
-          <button 
-            className="button_calculate"
-            onClick={handleCalculateScaleEffect}
-            disabled={isCalculating || minVolume >= maxVolume}
-            style={{
-              opacity: isCalculating || minVolume >= maxVolume ? 0.6 : 1,
-              cursor: isCalculating || minVolume >= maxVolume ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {isCalculating ? 'Расчет...' : 'Рассчитать эффект масштаба'}
-          </button>
-        )}
-        
-        {scaleRatio !== null && (
-          <div className="ratio">
-            Коэффициент: {scaleRatio}
-            <p style={{ paddingTop: '8px' }}>
-              {scaleRatio > 0 ? 'Положительный эффект масштаба' : 'Отрицательный эффект масштаба'}
-            </p>
-          </div>
-        )}
-      </div>
-
       {/* Панель кнопок управления (только для черновиков) */}
       {isDraft && (
         <div className="request_button" style={{
@@ -576,7 +546,6 @@ export const CostRequestPage: FC = () => {
           display: 'flex',
           gap: '15px',
           flexWrap: 'wrap',
-          justifyContent: 'center'
         }}>
           <button
             className="card_button"
@@ -585,24 +554,29 @@ export const CostRequestPage: FC = () => {
             style={{
               backgroundColor: '#007bff',
               color: '#FDF1E0',
-              borderColor: '#007bff'
+              borderColor: '#007bff',
+              height: '40px',
+              paddingLeft: '10px'
             }}
           >
             {isSaving ? "Сохранение..." : "Сохранить"}
           </button>
 
-          <button
+          {/* <button
             className="card_button"
             onClick={handleCancelChanges}
             disabled={isSaving || !hasChanges}
             style={{
               borderColor: '#6c757d',
               color: '#6c757d',
-              backgroundColor: 'transparent'
+              backgroundColor: 'transparent',
+              height: '40px',
+              paddingLeft: '10px'
+              
             }}
           >
             Отменить изменения
-          </button>
+          </button> */}
 
           <button
             className="card_button"
@@ -611,7 +585,10 @@ export const CostRequestPage: FC = () => {
             style={{
               backgroundColor: '#28a745',
               color: '#FDF1E0',
-              borderColor: '#28a745'
+              borderColor: '#28a745',
+              height: '40px',
+              width: '120px',
+              paddingLeft: '5px'
             }}
             title={
               hasChanges
@@ -628,10 +605,11 @@ export const CostRequestPage: FC = () => {
             style={{
               backgroundColor: '#dc3545',
               color: '#FDF1E0',
-              borderColor: '#dc3545'
+              borderColor: '#dc3545',
+              height: '40px'
             }}
           >
-            Удалить заявку
+            Удалить
           </button>
         </div>
       )}
@@ -644,6 +622,39 @@ export const CostRequestPage: FC = () => {
           onClose={() => setNotification(null)}
         />
       )}
+
+      {/* Глобальные стили для скрытия стрелочек у всех input type="number" */}
+      <style>
+        {`
+          /* Скрываем стрелочки у полей ввода типа number во всем приложении */
+          input[type="number"]::-webkit-inner-spin-button,
+          input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+          }
+          
+          input[type="number"] {
+            -moz-appearance: textfield;
+          }
+          
+          /* Для Firefox */
+          input[type="number"]::-webkit-outer-spin-button,
+          input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+          }
+          
+          /* Для Edge */
+          input[type="number"]::-ms-clear {
+            display: none;
+          }
+          
+          /* Для всех браузеров */
+          input[type="number"] {
+            appearance: textfield;
+          }
+        `}
+      </style>
     </div>
   );
 };
