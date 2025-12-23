@@ -17,7 +17,6 @@ import {
   formCostRequestAsync,
   updateCostPrice,
 } from "../store/costRequestSlice";
-// import type { Costs, CostRequestInfo } from "../store/costRequestSlice";
 
 export const CostRequestPage: FC = () => {
   const { id } = useParams();
@@ -34,13 +33,11 @@ export const CostRequestPage: FC = () => {
     message: string;
     type: "success" | "error" | "info";
   } | null>(null);
-  // const [originalCosts, setOriginalCosts] = useState<Costs[]>([]);
-  // const [originalRequestInfo, setOriginalRequestInfo] = useState<CostRequestInfo | undefined>(undefined);
   const [hasChanges, setHasChanges] = useState(false);
   const [minVolume, setMinVolume] = useState<number>(1);
   const [maxVolume, setMaxVolume] = useState<number>(10);
   const [scaleRatio, setScaleRatio] = useState<number | null>(null);
-  // const [isCalculating, setIsCalculating] = useState(false);
+  const [requestStatus, setRequestStatus] = useState<number>(0); // Добавляем состояние для статуса
 
   // Загружаем данные заявки
   useEffect(() => {
@@ -52,13 +49,6 @@ export const CostRequestPage: FC = () => {
             const requestData = result.payload;
             console.log('Request data from API:', requestData);
             
-            // setOriginalRequestInfo({
-            //   ...requestInfo,
-            //   max_volume: requestData.Max_volume,
-            //   min_volume: requestData.Min_volume,
-            //   calculationResult: requestData.ratio,
-            // });
-            
             // Устанавливаем значения для отображения
             if (requestData.Min_volume !== undefined) {
               setMinVolume(requestData.Min_volume);
@@ -68,6 +58,11 @@ export const CostRequestPage: FC = () => {
             }
             if (requestData.Ratio !== undefined) {
               setScaleRatio(requestData.Ratio);
+            }
+            
+            // Сохраняем статус заявки
+            if (requestData.status !== undefined) {
+              setRequestStatus(requestData.status);
             }
             
             // Устанавливаем данные в Redux
@@ -100,7 +95,15 @@ export const CostRequestPage: FC = () => {
     }
   }, [requestInfo]);
 
+  // Обновляем статус при изменении requestInfo (если в нем есть статус)
+  useEffect(() => {
+    if (requestInfo && requestInfo.status !== undefined) {
+      setRequestStatus(requestInfo.status);
+    }
+  }, [requestInfo]);
+
   console.log('Current costs in Redux:', costs);
+  console.log('Request status:', requestStatus); // Для отладки
 
   const handleDelete = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -181,49 +184,6 @@ export const CostRequestPage: FC = () => {
       setHasChanges(true);
     }
   };
-
-  // const handleCalculateScaleEffect = async () => {
-  //   if (minVolume >= maxVolume) {
-  //     setNotification({
-  //       message: "Максимальный объем должен быть больше минимального",
-  //       type: "error",
-  //     });
-  //     return;
-  //   }
-
-  //   setIsCalculating(true);
-  //   setNotification(null);
-
-  //   try {
-  //     // В реальном приложении здесь будет API вызов для расчета
-  //     // Пока используем mock-расчет
-  //     await new Promise(resolve => setTimeout(resolve, 1000));
-      
-  //     const mockRatio = parseFloat((minVolume / maxVolume * 100).toFixed(2));
-  //     setScaleRatio(mockRatio);
-      
-  //     setNotification({
-  //       message: "Расчет эффекта масштаба выполнен успешно",
-  //       type: "success",
-  //     });
-      
-  //     dispatch(
-  //       setRequestData({
-  //         ...requestInfo,
-  //         calculationResult: mockRatio,
-  //       }),
-  //     );
-  //     setHasChanges(true);
-  //   } catch (error) {
-  //     console.error("Ошибка при расчете:", error);
-  //     setNotification({
-  //       message: "Ошибка при расчете эффекта масштаба",
-  //       type: "error",
-  //     });
-  //   } finally {
-  //     setIsCalculating(false);
-  //   }
-  // };
 
   const handleRequestSave = async () => {
     if (id) {
@@ -314,24 +274,7 @@ export const CostRequestPage: FC = () => {
         ).unwrap();
       }
     }
-
-    // setOriginalCosts([...costs]);
-    // setOriginalRequestInfo({ ...requestInfo });
   };
-
-  // const handleCancelChanges = () => {
-  //   if (originalCosts.length > 0) {
-  //     dispatch(setCosts([...originalCosts]));
-  //   }
-  //   if (originalRequestInfo) {
-  //     dispatch(setRequestData({ ...originalRequestInfo }));
-  //   }
-  //   setNotification({
-  //     message: "Изменения отменены",
-  //     type: "info",
-  //   });
-  //   setHasChanges(false);
-  // };
 
   if (loading) {
     return (
@@ -406,29 +349,19 @@ export const CostRequestPage: FC = () => {
           </div>
         </div>
         
-        {/* {isDraft && (
-          <button 
-            className="button_calculate"
-            onClick={handleCalculateScaleEffect}
-            disabled={isCalculating || minVolume >= maxVolume}
-            style={{
-              opacity: isCalculating || minVolume >= maxVolume ? 0.6 : 1,
-              cursor: isCalculating || minVolume >= maxVolume ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {isCalculating ? 'Расчет...' : 'Рассчитать эффект масштаба'}
-          </button>
-        )} */}
-        
-        {/* {scaleRatio !== null && (
-          <div className="ratio">
-            Коэффициент: {scaleRatio}
-            <p style={{ paddingTop: '8px' }}>
-              {scaleRatio > 0 ? 'Положительный эффект масштаба' : 'Отрицательный эффект масштаба'}
-            </p>
+       {/* Блок с коэффициентом показывается ТОЛЬКО при статусе 4 (Одобрена) */}
+      {requestStatus === 4 && scaleRatio !== null && (
+        <div className={`ratio-container ${scaleRatio > 1 ? 'ratio-positive' : 'ratio-negative'}`}>
+          <div className="ratio-value">
+            Коэффициент: <span>{scaleRatio}</span>
           </div>
-        )} */}
+          <div className="ratio-description">
+            {scaleRatio > 1 ? 'Положительный эффект масштаба' : 'Отрицательный эффект масштаба'}
+          </div>
+        </div>
+      )}
       </div>
+
 
       {/* Секция с издержками */}
       <div className="request">
@@ -561,22 +494,6 @@ export const CostRequestPage: FC = () => {
           >
             {isSaving ? "Сохранение..." : "Сохранить"}
           </button>
-
-          {/* <button
-            className="card_button"
-            onClick={handleCancelChanges}
-            disabled={isSaving || !hasChanges}
-            style={{
-              borderColor: '#6c757d',
-              color: '#6c757d',
-              backgroundColor: 'transparent',
-              height: '40px',
-              paddingLeft: '10px'
-              
-            }}
-          >
-            Отменить изменения
-          </button> */}
 
           <button
             className="card_button"

@@ -11,6 +11,8 @@ export interface Request {
   min_volume?: number;
   max_volume?: number;
   ratio?: number;
+  userId?: number;
+  username?: string;
 }
 
 export interface RequestsFilter {
@@ -35,6 +37,20 @@ export const getAllCostRequests = createAsyncThunk(
   async (filter?: RequestsFilter) => {
     const response = await api.costRequests.costRequestsList(filter);
     return response.data;
+  },
+);
+
+export const resolveRequest = createAsyncThunk(
+  "costRequest/resolveRequest",
+  async (requestId: number) => {
+    await api.costRequests.resolveUpdate(requestId);
+  },
+);
+
+export const rejectRequest = createAsyncThunk(
+  "costRequest/rejectRequest",
+  async (requestId: number) => {
+    await api.costRequests.rejectUpdate(requestId);
   },
 );
 
@@ -67,6 +83,8 @@ const requestsSlice = createSlice({
           min_volume: item.Min_volume || undefined,
           max_volume: item.Max_volume || undefined,
           ratio: item.Ratio || undefined,
+          userId: item.UserID || undefined,
+          username: item.username || undefined,
         }));
         state.count = requestsData.length;
       })

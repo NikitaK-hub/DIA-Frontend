@@ -4,6 +4,7 @@ import { api } from "../modules/ratioAPI";
 interface UserState {
   username: string;
   isAuthorized: boolean;
+  isModerator?: boolean;
   accessToken?: string;
   refreshToken?: string;
   tokenType?: string;
@@ -115,6 +116,7 @@ const userSlice = createSlice({
         state.username = user?.username || "";
         state.isAuthorized = true;
         state.accessToken = access_token;
+        state.isModerator = user?.role === "moderator";
         state.refreshToken = refresh_token;
         state.tokenType = token_type;
         state.expiresIn = expires_in;
@@ -162,6 +164,7 @@ const userSlice = createSlice({
         state.accessToken = undefined;
         state.refreshToken = undefined;
         state.tokenType = undefined;
+        state.isModerator = undefined;
         state.expiresIn = undefined;
         state.error = null;
         api.setSecurityData(null);

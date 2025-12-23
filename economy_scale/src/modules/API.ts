@@ -51,6 +51,7 @@ export interface HandlerCostsRequestsFilterResponse {
   Status?: number;
   UserID?: number;
   id?: number;
+  username?: string;
 }
 
 export interface HandlerCreateCostRequest {

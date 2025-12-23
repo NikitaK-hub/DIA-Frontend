@@ -1,5 +1,9 @@
 import { type FC, useEffect, useState } from "react";
-import { getAllCostRequests } from "../store/requestsSlice";
+import {
+  getAllCostRequests,
+  rejectRequest,
+  resolveRequest,
+} from "../store/requestsSlice";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "../store";
 import { Button } from "react-bootstrap";
@@ -9,9 +13,20 @@ export const RequestsListPage: FC = () => {
   const { requests } = useSelector((state: RootState) => state.requests);
   const [requestClicked, setRequestClicked] = useState(false);
   const [requestId, setRequestId] = useState<number | null>(null);
+  const [selectedUser, setSelectedUser] = useState<string>("");
   const navigate = useNavigate();
 
   const dispatch = useDispatch<AppDispatch>();
+
+  const isModerator = useSelector((state: RootState) => state.user.isModerator);
+
+  // Получаем информацию о выбранной заявке
+  const selectedRequest = requestId 
+    ? requests.find(request => request.requestId === requestId)
+    : null;
+
+  // Состояние для отслеживания расчета
+  const [isCalculating, setIsCalculating] = useState(false);
 
   const handleStatusFilterChange = (
     e: React.ChangeEvent<HTMLSelectElement>,
@@ -34,13 +49,18 @@ export const RequestsListPage: FC = () => {
   };
 
   const handleDateFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const dateFrom = e.target.value;
-    dispatch(getAllCostRequests({ dateFrom }));
+    const date = e.target.value;
+    dispatch(getAllCostRequests({ dateFrom: date || undefined }));
   };
 
   const handleDateToChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const dateTo = e.target.value;
-    dispatch(getAllCostRequests({ dateTo }));
+    const date = e.target.value;
+    dispatch(getAllCostRequests({ dateTo: date || undefined }));
+  };
+
+  const handleUserSelection = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedUser = e.target.value;
+    setSelectedUser(selectedUser);
   };
 
   const handleRequestClick = (id: number) => {
@@ -49,8 +69,120 @@ export const RequestsListPage: FC = () => {
   };
 
   const handleTransitionButtonClick = () => {
-    navigate(`/cost-request/${requestId}`);
+    if (requestId) {
+      navigate(`/cost-request/${requestId}`);
+    }
   };
+
+  // Функция для расчета эффекта масштаба
+  const handleCalculateScaleEffect = async (): Promise<number | null> => {
+    if (!selectedRequest) return null;
+    
+    setIsCalculating(true);
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const mockMinVolume = 100;
+      const mockMaxVolume = 200;
+      
+      if (mockMinVolume >= mockMaxVolume) {
+        return null;
+      }
+      
+      const ratio = parseFloat((mockMinVolume / mockMaxVolume * 100).toFixed(2));
+      
+      return ratio;
+    } catch (error) {
+      console.error("Ошибка при расчете эффекта масштаба:", error);
+      return null;
+    } finally {
+      setIsCalculating(false);
+    }
+  };
+
+  // Функция для одобрения выбранной заявки (статус 4)
+  const handleApproveSelected = async () => {
+    if (!requestId || !selectedRequest || selectedRequest.status !== 3) return;
+    
+    try {
+      const calculatedRatio = await handleCalculateScaleEffect();
+      
+      if (calculatedRatio === null) {
+        return;
+      }
+      
+      await dispatch(resolveRequest(requestId)).unwrap();
+      
+      dispatch(getAllCostRequests());
+      
+      setRequestClicked(false);
+      setRequestId(null);
+      
+    } catch (error) {
+      console.error("Ошибка при одобрении заявки:", error);
+    }
+  };
+
+  // Функция для отклонения выбранной заявки (статус 5)
+  const handleRejectSelected = async () => {
+    if (!requestId || !selectedRequest || selectedRequest.status !== 3) return;
+    
+    try {
+      await dispatch(rejectRequest(requestId)).unwrap();
+      dispatch(getAllCostRequests());
+      
+      setRequestClicked(false);
+      setRequestId(null);
+    } catch (error) {
+      console.error("Ошибка при отклонении заявки:", error);
+    }
+  };
+
+  // Функция для форматирования даты
+  const formatDate = (date?: Date) => {
+    if (!date) return "-";
+    return date.toLocaleDateString('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Функция для отображения результата расчета в зависимости от статуса
+  const renderScaleEffect = (request: any) => {
+    // Только для статуса 4 (Одобрена) показываем результат
+    if (request.status === 4) {
+      // Используем ratio, если он есть (даже если равен 0)
+      const ratioValue = request.ratio;
+      
+      // Явно проверяем, что значение не null и не undefined
+      // Значение 0 проходит эту проверку!
+      if (ratioValue !== null && ratioValue !== undefined) {
+        const numValue = Number(ratioValue);
+        // Проверяем, что это число (включая 0) и не NaN
+        if (!isNaN(numValue)) {
+          return `${numValue}%`;
+        }
+      }
+      // Если данных нет или они некорректны
+      return 'Нет данных';
+    }
+    
+    // Для всех остальных статусов (3, 5 и любых других) - "Нет данных"
+    return 'Нет данных';
+  };
+
+  // Получаем уникальных пользователей для фильтра
+  const uniqueUsers = Array.from(
+    new Set(
+      requests
+        .map(request => request.username)
+        .filter((username): username is string => !!username)
+    )
+  );
 
   useEffect(() => {
     dispatch(getAllCostRequests());
@@ -58,12 +190,13 @@ export const RequestsListPage: FC = () => {
 
   return (
     <div className="requests-list-page">
-      <h1 className="requests-label">Заявки</h1>
-      <div className="filters">
+        <h1 className="requests-label" style={{ marginLeft: '30%' }}>Заявки</h1>
+      
+      <div className={"filters " + (isModerator ? "moderator" : "")}>
         <div className="filter-item">
           <label className="filter-label">Статус</label>
           <select className="filter-select" onChange={handleStatusFilterChange}>
-            <option value="all">Все</option>
+            <option defaultValue="all">Все</option>
             <option value="formed">Сформирована</option>
             <option value="approved">Одобрена</option>
             <option value="rejected">Отклонена</option>
@@ -87,6 +220,19 @@ export const RequestsListPage: FC = () => {
             type="date"
           />
         </div>
+        {isModerator && (
+          <div className="filter-item">
+            <label className="filter-label">Пользователь</label>
+            <select className="filter-select" onChange={handleUserSelection}>
+              <option value="">Все пользователи</option>
+              {uniqueUsers.map((username) => (
+                <option key={username} value={username}>
+                  {username}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
       <table className="request-table">
         <thead className="columns-name">
@@ -97,54 +243,99 @@ export const RequestsListPage: FC = () => {
             <th>Дата оформления</th>
             <th>Дата завершения</th>
             <th>Эффект масштаба</th>
+            {isModerator && <th>Пользователь</th>}
           </tr>
         </thead>
         <tbody>
           {requests.length ? (
-            requests.map((request) => (
-              <tr
-                key={request.requestId}
-                onClick={() => handleRequestClick(request.requestId)}
-              >
-                <td>{request.requestId}</td>
-                {(() => {
-                  switch (request.status) {
-                    case 3:
-                      return <td>Сформирована</td>;
-                    case 4:
-                      return <td>Одобрена</td>;
-                    default:
-                      return <td>Отклонена</td>;
-                  }
-                })()}
-                <td>{request.createdAt?.toLocaleString()}</td>
-                {!request.closedAt && !request.formedAt ? (
-                  <td>Не оформлена</td>
-                ) : (
-                  <td>{request.formedAt?.toLocaleString()}</td>
-                )}
-                {!request.closedAt && request.formedAt ? (
-                  <td>Не завершена</td>
-                ) : (
-                  <td>{request.closedAt?.toLocaleString()}</td>
-                )}
-                <td>{request.ratio}</td>
-              </tr>
-            ))
+            requests
+              .filter(request => !selectedUser || request.username === selectedUser)
+              .map((request) => (
+                <tr
+                  key={request.requestId}
+                  onClick={() => handleRequestClick(request.requestId)}
+                  className={requestClicked && requestId === request.requestId ? "selected-row" : ""}
+                >
+                  <td>{request.requestId}</td>
+                  <td>
+                    <span className={`status-badge status-${request.status}`}>
+                      {request.status === 1 ? 'Черновик' :
+                       request.status === 2 ? 'На рассмотрении' :
+                       request.status === 3 ? 'Сформирована' :
+                       request.status === 4 ? 'Одобрена' :
+                       request.status === 5 ? 'Отклонена' : 'Неизвестно'}
+                    </span>
+                  </td>
+                  <td>{formatDate(request.createdAt)}</td>
+                  <td>
+                    {request.formedAt 
+                      ? formatDate(request.formedAt) 
+                      : 'Не оформлена'
+                    }
+                  </td>
+                  <td>
+                    {request.closedAt 
+                      ? formatDate(request.closedAt) 
+                      : (request.formedAt ? 'Не завершена' : '-')
+                    }
+                  </td>
+                  <td className="center-column-data">
+                    {renderScaleEffect(request)}
+                  </td>
+                  {isModerator && (
+                    // ЗАМЕНА: request.userId на request.username
+                    <td className="center-column-data">{request.username || 'Неизвестно'}</td>
+                  )}
+                </tr>
+              ))
           ) : (
             <tr>
-              <td colSpan={5}>Нет заявок</td>
+              <td colSpan={isModerator ? 7 : 6} className="text-center">
+                Нет заявок
+              </td>
             </tr>
           )}
         </tbody>
       </table>
+      
       {requestClicked && (
-        <Button
-          className="transition-button"
-          onClick={handleTransitionButtonClick}
-        >
-          Перейти к заявке
-        </Button>
+        <div className="action-buttons-container">
+          {isModerator && selectedRequest && selectedRequest.status === 3 ? (
+            // Для модератора: три кнопки в ряд
+            <div className="three-buttons-row">
+              <Button
+                variant="danger"
+                onClick={handleRejectSelected}
+                className="action-button moderator-button reject-button"
+                disabled={isCalculating}
+              >
+                Отклонить
+              </Button>
+              <Button
+                className="action-button transition-button"
+                onClick={handleTransitionButtonClick}
+              >
+                Перейти к заявке
+              </Button>
+              <Button
+                variant="success"
+                onClick={handleApproveSelected}
+                className="action-button moderator-button approve-button"
+                disabled={isCalculating}
+              >
+                {isCalculating ? "Расчет..." : "Одобрить"}
+              </Button>
+            </div>
+          ) : (
+            // Для обычного пользователя или для заявок не в статусе 3: только одна кнопка
+            <Button
+              className="action-button transition-button"
+              onClick={handleTransitionButtonClick}
+            >
+              Перейти к заявке
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );
