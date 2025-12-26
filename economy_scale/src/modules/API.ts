@@ -10,6 +10,11 @@
  * ---------------------------------------------------------------
  */
 
+export interface HandlerAsyncUpdateRequestRatioRequest {
+  Ratio: number;
+  key: string;
+}
+
 export interface HandlerCostRequestDetailResponse {
   Max_volume?: number;
   Min_volume?: number;
@@ -51,7 +56,7 @@ export interface HandlerCostsRequestsFilterResponse {
   Status?: number;
   UserID?: number;
   id?: number;
-  username?: string;
+  username: string;
 }
 
 export interface HandlerCreateCostRequest {
@@ -459,6 +464,28 @@ export class Api<
         path: `/cost-requests/${id}`,
         method: "DELETE",
         secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update ratio in request asynchronously using secret key
+     *
+     * @tags cost-requests
+     * @name AsyncUpdateUpdate
+     * @summary Asynchronously update ratio in request
+     * @request PUT:/cost-requests/{id}/async-update
+     */
+    asyncUpdateUpdate: (
+      id: number,
+      request: HandlerAsyncUpdateRequestRatioRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<Record<string, string>, Record<string, string>>({
+        path: `/cost-requests/${id}/async-update`,
+        method: "PUT",
+        body: request,
         type: ContentType.Json,
         format: "json",
         ...params,

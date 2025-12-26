@@ -12,6 +12,7 @@ import '../styles/global.css';
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "../store";
 import { logoutUserAsync } from "../store/userSlice";
+import { dest_root } from "../modules/target_config";
 
 const Header: React.FC = () => {
   const location = useLocation();
@@ -71,7 +72,7 @@ const Header: React.FC = () => {
           <div className="header-left-section" style={{ backgroundColor: 'transparent' }}>
             <div className="logo-and-title">
               <Nav.Link as={Link} to="/" className="logo-link" style={{ backgroundColor: 'transparent' }}>
-                <img src="/DIA-Frontend/logo.png" alt="Logo" className="logo-img" />
+                <img src={`${dest_root}/logo.png`} alt="Logo" className="logo-img" />
               </Nav.Link>
               <span className="brand-title">Economy Scale</span>
             </div>

@@ -8,6 +8,7 @@ import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "../store";
 import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { api } from "../modules/ratioAPI";
 
 export const RequestsListPage: FC = () => {
   const { requests } = useSelector((state: RootState) => state.requests);
@@ -21,12 +22,13 @@ export const RequestsListPage: FC = () => {
   const isModerator = useSelector((state: RootState) => state.user.isModerator);
 
   // Получаем информацию о выбранной заявке
-  const selectedRequest = requestId 
-    ? requests.find(request => request.requestId === requestId)
+  const selectedRequest = requestId
+    ? requests.find((request) => request.requestId === requestId)
     : null;
 
   // Состояние для отслеживания расчета
-  const [isCalculating, setIsCalculating] = useState(false);
+  // const [isCalculating, setIsCalculating] = useState(false);
+  const [isCalculating] = useState(false);
 
   const handleStatusFilterChange = (
     e: React.ChangeEvent<HTMLSelectElement>,
@@ -74,64 +76,37 @@ export const RequestsListPage: FC = () => {
     }
   };
 
-  // Функция для расчета эффекта масштаба
-  const handleCalculateScaleEffect = async (): Promise<number | null> => {
-    if (!selectedRequest) return null;
-    
-    setIsCalculating(true);
-    
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockMinVolume = 100;
-      const mockMaxVolume = 200;
-      
-      if (mockMinVolume >= mockMaxVolume) {
-        return null;
-      }
-      
-      const ratio = parseFloat((mockMinVolume / mockMaxVolume * 100).toFixed(2));
-      
-      return ratio;
-    } catch (error) {
-      console.error("Ошибка при расчете эффекта масштаба:", error);
-      return null;
-    } finally {
-      setIsCalculating(false);
-    }
-  };
-
   // Функция для одобрения выбранной заявки (статус 4)
   const handleApproveSelected = async () => {
     if (!requestId || !selectedRequest || selectedRequest.status !== 3) return;
-    
-    try {
-      const calculatedRatio = await handleCalculateScaleEffect();
-      
-      if (calculatedRatio === null) {
-        return;
+
+    while (true) {
+      const costRequest = (await api.costRequests.resolveUpdate(requestId))
+        .data;
+      if (costRequest.Ratio) {
+        break;
       }
-      
-      await dispatch(resolveRequest(requestId)).unwrap();
-      
-      dispatch(getAllCostRequests());
-      
-      setRequestClicked(false);
-      setRequestId(null);
-      
-    } catch (error) {
-      console.error("Ошибка при одобрении заявки:", error);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
+
+    dispatch(getAllCostRequests());
+
+    await dispatch(resolveRequest(requestId)).unwrap();
+
+    dispatch(getAllCostRequests());
+
+    setRequestClicked(false);
+    setRequestId(null);
   };
 
   // Функция для отклонения выбранной заявки (статус 5)
   const handleRejectSelected = async () => {
     if (!requestId || !selectedRequest || selectedRequest.status !== 3) return;
-    
+
     try {
       await dispatch(rejectRequest(requestId)).unwrap();
       dispatch(getAllCostRequests());
-      
+
       setRequestClicked(false);
       setRequestId(null);
     } catch (error) {
@@ -142,12 +117,12 @@ export const RequestsListPage: FC = () => {
   // Функция для форматирования даты
   const formatDate = (date?: Date) => {
     if (!date) return "-";
-    return date.toLocaleDateString('ru-RU', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleDateString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -157,7 +132,7 @@ export const RequestsListPage: FC = () => {
     if (request.status === 4) {
       // Используем ratio, если он есть (даже если равен 0)
       const ratioValue = request.ratio;
-      
+
       // Явно проверяем, что значение не null и не undefined
       // Значение 0 проходит эту проверку!
       if (ratioValue !== null && ratioValue !== undefined) {
@@ -168,20 +143,20 @@ export const RequestsListPage: FC = () => {
         }
       }
       // Если данных нет или они некорректны
-      return 'Нет данных';
+      return "Нет данных";
     }
-    
+
     // Для всех остальных статусов (3, 5 и любых других) - "Нет данных"
-    return 'Нет данных';
+    return "Нет данных";
   };
 
   // Получаем уникальных пользователей для фильтра
   const uniqueUsers = Array.from(
     new Set(
       requests
-        .map(request => request.username)
-        .filter((username): username is string => !!username)
-    )
+        .map((request) => request.username)
+        .filter((username): username is string => !!username),
+    ),
   );
 
   useEffect(() => {
@@ -190,8 +165,10 @@ export const RequestsListPage: FC = () => {
 
   return (
     <div className="requests-list-page">
-        <h1 className="requests-label" style={{ marginLeft: '30%' }}>Заявки</h1>
-      
+      <h1 className="requests-label" style={{ marginLeft: "30%" }}>
+        Заявки
+      </h1>
+
       <div className={"filters " + (isModerator ? "moderator" : "")}>
         <div className="filter-item">
           <label className="filter-label">Статус</label>
@@ -249,42 +226,56 @@ export const RequestsListPage: FC = () => {
         <tbody>
           {requests.length ? (
             requests
-              .filter(request => !selectedUser || request.username === selectedUser)
+              .filter(
+                (request) => !selectedUser || request.username === selectedUser,
+              )
               .map((request) => (
                 <tr
                   key={request.requestId}
                   onClick={() => handleRequestClick(request.requestId)}
-                  className={requestClicked && requestId === request.requestId ? "selected-row" : ""}
+                  className={
+                    requestClicked && requestId === request.requestId
+                      ? "selected-row"
+                      : ""
+                  }
                 >
                   <td>{request.requestId}</td>
                   <td>
                     <span className={`status-badge status-${request.status}`}>
-                      {request.status === 1 ? 'Черновик' :
-                       request.status === 2 ? 'На рассмотрении' :
-                       request.status === 3 ? 'Сформирована' :
-                       request.status === 4 ? 'Одобрена' :
-                       request.status === 5 ? 'Отклонена' : 'Неизвестно'}
+                      {request.status === 1
+                        ? "Черновик"
+                        : request.status === 2
+                          ? "На рассмотрении"
+                          : request.status === 3
+                            ? "Сформирована"
+                            : request.status === 4
+                              ? "Одобрена"
+                              : request.status === 5
+                                ? "Отклонена"
+                                : "Неизвестно"}
                     </span>
                   </td>
                   <td>{formatDate(request.createdAt)}</td>
                   <td>
-                    {request.formedAt 
-                      ? formatDate(request.formedAt) 
-                      : 'Не оформлена'
-                    }
+                    {request.formedAt
+                      ? formatDate(request.formedAt)
+                      : "Не оформлена"}
                   </td>
                   <td>
-                    {request.closedAt 
-                      ? formatDate(request.closedAt) 
-                      : (request.formedAt ? 'Не завершена' : '-')
-                    }
+                    {request.closedAt
+                      ? formatDate(request.closedAt)
+                      : request.formedAt
+                        ? "Не завершена"
+                        : "-"}
                   </td>
                   <td className="center-column-data">
                     {renderScaleEffect(request)}
                   </td>
                   {isModerator && (
                     // ЗАМЕНА: request.userId на request.username
-                    <td className="center-column-data">{request.username || 'Неизвестно'}</td>
+                    <td className="center-column-data">
+                      {request.username || "Неизвестно"}
+                    </td>
                   )}
                 </tr>
               ))
@@ -297,7 +288,7 @@ export const RequestsListPage: FC = () => {
           )}
         </tbody>
       </table>
-      
+
       {requestClicked && (
         <div className="action-buttons-container">
           {isModerator && selectedRequest && selectedRequest.status === 3 ? (

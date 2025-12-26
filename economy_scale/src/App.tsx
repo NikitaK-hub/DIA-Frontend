@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Container } from "react-bootstrap";
 import Header from "./components/header";
@@ -10,10 +10,29 @@ import { ProfilePage } from "./pages/profilePage";
 import { LoginPage } from "./pages/loginPage";
 import { CostRequestPage } from "./pages/costRequest";
 import { RequestsListPage } from "./pages/requestsListPage";
+import { invoke } from "@tauri-apps/api/core";
 import "./styles/App.css";
 
-
 const App: React.FC = () => {
+  useEffect(() => {
+    invoke("tauri", { cmd: "create" })
+      .then(() => {
+        console.log("Tauri launched");
+      })
+      .catch(() => {
+        console.log("Tauri not launched");
+      });
+    return () => {
+      invoke("tauri", { cmd: "close" })
+        .then(() => {
+          console.log("Tauri launched");
+        })
+        .catch(() => {
+          console.log("Tauri not launched");
+        });
+    };
+  }, []);
+
   return (
     <>
       <Header />

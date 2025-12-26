@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
-import { dest_root, api_proxy_addr } from "./src/modules/target_config";
+import { dest_root, api_addr } from "./src/modules/target_config";
 import fs from "fs";
 import path from "path";
 import mkcert from "vite-plugin-mkcert";
@@ -15,7 +15,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       "/api": {
-        target: api_proxy_addr,
+        target: api_addr,
         changeOrigin: true,
         secure: false,
       },

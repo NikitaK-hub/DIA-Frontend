@@ -1,7 +1,14 @@
-const target_tauri = false;
+const target: "local" | "ghpages" | "tauri" = "local";
+// const target: "local" | "ghpages" | "tauri" = "tauri";
+// const target: "local" | "ghpages" | "tauri" = "ghpages";
+export const api_addr = "http://localhost:8080";
+// export const api_addr = "https://192.168.56.1:3000/api";
 
-export const api_proxy_addr = "http://localhost:8080";
-export const img_proxy_addr = "http://localhost:9000";
-export const dest_api = target_tauri ? api_proxy_addr : "/api";
-export const dest_root = target_tauri ? "" : "/DIA-Frontend/";
-export const dest_img = target_tauri ? img_proxy_addr : "/costimages";
+export const dest_api = {
+  local: "/api",
+  ghpages: api_addr,
+  tauri: api_addr,
+}[target];
+export const dest_root = { local: "", ghpages: "/DIA-Frontend", tauri: "" }[
+  target
+];

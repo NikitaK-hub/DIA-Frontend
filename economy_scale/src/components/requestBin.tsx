@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Spinner } from "react-bootstrap";
 import { getCostRequestInfo } from "../modules/ratioAPI";
 import type { CostRequestInfo } from "../modules/ratioAPI";
+import { dest_root } from "../modules/target_config";
 
 export const RequestBin: FC = () => {
   const [costRequestInfo, setCostRequestInfo] =
@@ -45,7 +46,7 @@ export const RequestBin: FC = () => {
     >
       <img
         className="cost-request-button"
-        src="/DIA-Frontend/request_bin.png"
+        src={`${dest_root}/request_bin.png`}
         alt="Request Bin"
       />
       {costRequestInfo && costRequestInfo.item_count > 0 && (

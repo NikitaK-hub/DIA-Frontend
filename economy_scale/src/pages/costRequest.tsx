@@ -1,4 +1,3 @@
-// pages/CostRequestPage.tsx
 import { useEffect, type FC, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
@@ -11,12 +10,12 @@ import {
   deleteCostRequest,
   setRequestData,
   updateCostRequest,
-  // setCosts,
   deleteCostFromRequest,
   updateCostInRequestAsync,
   formCostRequestAsync,
   updateCostPrice,
 } from "../store/costRequestSlice";
+import { dest_root } from "../modules/target_config";
 
 export const CostRequestPage: FC = () => {
   const { id } = useParams();
@@ -452,7 +451,7 @@ export const CostRequestPage: FC = () => {
                     </div>
                     {isDraft && (
                       <img 
-                        src="/DIA-Frontend/bin.png" 
+                        src={`${dest_root}/bin.png`}
                         style={{ 
                           height: '45px', 
                           width: '35px', 
