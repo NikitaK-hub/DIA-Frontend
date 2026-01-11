@@ -218,6 +218,8 @@ h5{
     font-size: 20px;
     color: #000;
     padding-left: 10px;
+    min-width: 180px;
+    margin-right: 15px;
 }
 
 .input_price{
@@ -230,6 +232,8 @@ h5{
     border-radius: 20px;
     margin-right: 10px;
     font-size: 25px;
+    min-width: 160px;
+    padding: 5px 10px;
 }
 
 .request_button{
@@ -2303,4 +2307,15 @@ Login page styles
   padding-top: 8px;
   font-size: 16px;
   font-weight: 500;
+}
+
+
+/* Обновите эти стили в CSS файле */
+.cost_price {
+    min-width: 270px !important; /* Увеличиваем блок */
+    margin-right: 15px; /* Отступ для кнопки */
+}
+
+.input_price {
+    min-width: 100px !important; /* Уменьшаем поле ввода */
 }

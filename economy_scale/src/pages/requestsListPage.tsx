@@ -15,6 +15,8 @@ export const RequestsListPage: FC = () => {
   const [requestClicked, setRequestClicked] = useState(false);
   const [requestId, setRequestId] = useState<number | null>(null);
   const [selectedUser, setSelectedUser] = useState<string>("");
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
   const navigate = useNavigate();
 
   const dispatch = useDispatch<AppDispatch>();
@@ -30,34 +32,45 @@ export const RequestsListPage: FC = () => {
   // const [isCalculating, setIsCalculating] = useState(false);
   const [isCalculating] = useState(false);
 
+  // Функция для получения сегодняшней даты в формате YYYY-MM-DD
+  const getTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const handleStatusFilterChange = (
     e: React.ChangeEvent<HTMLSelectElement>,
   ) => {
     const status = e.target.value;
     switch (status) {
       case "formed":
-        dispatch(getAllCostRequests({ status: 3 }));
+        dispatch(getAllCostRequests({ status: 3, dateFrom, dateTo }));
         break;
       case "approved":
-        dispatch(getAllCostRequests({ status: 4 }));
+        dispatch(getAllCostRequests({ status: 4, dateFrom, dateTo }));
         break;
       case "rejected":
-        dispatch(getAllCostRequests({ status: 5 }));
+        dispatch(getAllCostRequests({ status: 5, dateFrom, dateTo }));
         break;
       default:
-        dispatch(getAllCostRequests());
+        dispatch(getAllCostRequests({ dateFrom, dateTo }));
         break;
     }
   };
 
   const handleDateFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const date = e.target.value;
-    dispatch(getAllCostRequests({ dateFrom: date || undefined }));
+    setDateFrom(date);
+    dispatch(getAllCostRequests({ dateFrom: date || undefined, dateTo }));
   };
 
   const handleDateToChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const date = e.target.value;
-    dispatch(getAllCostRequests({ dateTo: date || undefined }));
+    setDateTo(date);
+    dispatch(getAllCostRequests({ dateFrom, dateTo: date || undefined }));
   };
 
   const handleUserSelection = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -79,9 +92,9 @@ export const RequestsListPage: FC = () => {
   // Функция для одобрения выбранной заявки (статус 4)
   const handleApproveSelected = async () => {
     if (!requestId || !selectedRequest || selectedRequest.status !== 3) return;
-
+    const costRequest = (await api.costRequests.resolveUpdate(requestId)).data;
     while (true) {
-      const costRequest = (await api.costRequests.resolveUpdate(requestId))
+      const cost = (await api.costRequests.costRequestsList())
         .data;
       if (costRequest.Ratio) {
         break;
@@ -89,11 +102,20 @@ export const RequestsListPage: FC = () => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
-    dispatch(getAllCostRequests());
+    // while (true) {
+    //   const costRequest = (await api.costRequests.resolveUpdate(requestId))
+    //     .data;
+    //   if (costRequest.Ratio) {
+    //     break;
+    //   }
+    //   await new Promise((resolve) => setTimeout(resolve, 1000));
+    // }
+
+    dispatch(getAllCostRequests({ dateFrom, dateTo }));
 
     await dispatch(resolveRequest(requestId)).unwrap();
 
-    dispatch(getAllCostRequests());
+    dispatch(getAllCostRequests({ dateFrom, dateTo }));
 
     setRequestClicked(false);
     setRequestId(null);
@@ -105,7 +127,7 @@ export const RequestsListPage: FC = () => {
 
     try {
       await dispatch(rejectRequest(requestId)).unwrap();
-      dispatch(getAllCostRequests());
+      dispatch(getAllCostRequests({ dateFrom, dateTo }));
 
       setRequestClicked(false);
       setRequestId(null);
@@ -126,21 +148,33 @@ export const RequestsListPage: FC = () => {
     });
   };
 
+  // Функция для форматирования числа с ограничением знаков после запятой
+  const formatRatio = (ratioValue: any) => {
+    if (ratioValue === null || ratioValue === undefined) {
+      return "Нет данных";
+    }
+    
+    const numValue = Number(ratioValue);
+    if (isNaN(numValue)) {
+      return "Нет данных";
+    }
+    
+    // Ограничиваем до 5 знаков после запятой
+    return numValue.toFixed(5);
+  };
+
   // Функция для отображения результата расчета в зависимости от статуса
   const renderScaleEffect = (request: any) => {
     // Только для статуса 4 (Одобрена) показываем результат
     if (request.status === 4) {
       // Используем ratio, если он есть (даже если равен 0)
       const ratioValue = request.ratio;
-
+      
       // Явно проверяем, что значение не null и не undefined
       // Значение 0 проходит эту проверку!
       if (ratioValue !== null && ratioValue !== undefined) {
-        const numValue = Number(ratioValue);
-        // Проверяем, что это число (включая 0) и не NaN
-        if (!isNaN(numValue)) {
-          return `${numValue}%`;
-        }
+        const formattedValue = formatRatio(ratioValue);
+        return `${formattedValue}%`;
       }
       // Если данных нет или они некорректны
       return "Нет данных";
@@ -148,6 +182,14 @@ export const RequestsListPage: FC = () => {
 
     // Для всех остальных статусов (3, 5 и любых других) - "Нет данных"
     return "Нет данных";
+  };
+
+  // Функция для отображения объема выпуска
+  const renderVolume = (volume?: number) => {
+    if (volume !== undefined && volume !== null) {
+      return volume;
+    }
+    return "-";
   };
 
   // Получаем уникальных пользователей для фильтра
@@ -160,7 +202,13 @@ export const RequestsListPage: FC = () => {
   );
 
   useEffect(() => {
-    dispatch(getAllCostRequests());
+    // Устанавливаем сегодняшнюю дату в оба поля при загрузке
+    const today = getTodayDate();
+    setDateFrom(today);
+    setDateTo(today);
+    
+    // Загружаем заявки с сегодняшней датой
+    dispatch(getAllCostRequests({ dateFrom: today, dateTo: today }));
   }, [dispatch]);
 
   return (
@@ -186,6 +234,7 @@ export const RequestsListPage: FC = () => {
             placeholder="Дата начала"
             onChange={handleDateFromChange}
             type="date"
+            value={dateFrom}
           />
         </div>
         <div className="filter-item">
@@ -195,6 +244,7 @@ export const RequestsListPage: FC = () => {
             placeholder="Дата окончания"
             onChange={handleDateToChange}
             type="date"
+            value={dateTo}
           />
         </div>
         {isModerator && (
@@ -219,6 +269,8 @@ export const RequestsListPage: FC = () => {
             <th>Дата создания</th>
             <th>Дата оформления</th>
             <th>Дата завершения</th>
+            <th>1-ый выпуск</th>
+            <th>2-ый выпуск</th>
             <th>Эффект масштаба</th>
             {isModerator && <th>Пользователь</th>}
           </tr>
@@ -269,10 +321,15 @@ export const RequestsListPage: FC = () => {
                         : "-"}
                   </td>
                   <td className="center-column-data">
+                    {renderVolume(request.min_volume)}
+                  </td>
+                  <td className="center-column-data">
+                    {renderVolume(request.max_volume)}
+                  </td>
+                  <td className="center-column-data">
                     {renderScaleEffect(request)}
                   </td>
                   {isModerator && (
-                    // ЗАМЕНА: request.userId на request.username
                     <td className="center-column-data">
                       {request.username || "Неизвестно"}
                     </td>
@@ -281,7 +338,7 @@ export const RequestsListPage: FC = () => {
               ))
           ) : (
             <tr>
-              <td colSpan={isModerator ? 7 : 6} className="text-center">
+              <td colSpan={isModerator ? 9 : 8} className="text-center">
                 Нет заявок
               </td>
             </tr>

@@ -36,7 +36,8 @@ export const CostRequestPage: FC = () => {
   const [minVolume, setMinVolume] = useState<number>(1);
   const [maxVolume, setMaxVolume] = useState<number>(10);
   const [scaleRatio, setScaleRatio] = useState<number | null>(null);
-  const [requestStatus, setRequestStatus] = useState<number>(0); // Добавляем состояние для статуса
+  const [requestStatus, setRequestStatus] = useState<number>(0);
+  const [savingCostIds, setSavingCostIds] = useState<Set<number>>(new Set()); // Для отслеживания сохранения отдельных издержек
 
   // Загружаем данные заявки
   useEffect(() => {
@@ -101,9 +102,6 @@ export const CostRequestPage: FC = () => {
     }
   }, [requestInfo]);
 
-  console.log('Current costs in Redux:', costs);
-  console.log('Request status:', requestStatus); // Для отладки
-
   const handleDelete = async (e: React.FormEvent) => {
     e.preventDefault();
     if (id) {
@@ -154,6 +152,44 @@ export const CostRequestPage: FC = () => {
     // Обновляем в Redux
     dispatch(updateCostPrice({ costId, costPrice: numValue }));
     setHasChanges(true);
+  };
+
+  // Сохранение отдельной издержки
+  const handleSaveCost = async (costId: number | undefined, costTitle: string) => {
+    if (!costId || !id) return;
+    
+    setSavingCostIds(prev => new Set(prev).add(costId));
+    
+    try {
+      // Находим издержку в массиве costs
+      const cost = costs.find(c => c.cost_id === costId);
+      if (cost) {
+        await dispatch(
+          updateCostInRequestAsync({
+            requestId: Number(id),
+            costId: costId,
+            costPrice: cost.cost_price,
+          }),
+        ).unwrap();
+        
+        setNotification({
+          message: `Издержка "${costTitle}" успешно сохранена!`,
+          type: "success",
+        });
+      }
+    } catch (error) {
+      console.error("Ошибка при сохранении издержки:", error);
+      setNotification({
+        message: `Ошибка при сохранении издержки "${costTitle}"`,
+        type: "error",
+      });
+    } finally {
+      setSavingCostIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(costId);
+        return newSet;
+      });
+    }
   };
 
   const handleMinVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -361,6 +397,17 @@ export const CostRequestPage: FC = () => {
       )}
       </div>
 
+      {/* Блок с коэффициентом показывается если заявка не одобрена*/}
+      {requestStatus !== 4 && (
+         <div className={"ratio-container"}>
+          <div className="ratio-description">
+              <div className="ratio-value">
+                Коэффициент: <span>0</span>
+                <p>Сформируйте заявку</p>
+              </div>
+            </div>
+          </div>
+      )}
 
       {/* Секция с издержками */}
       <div className="request">
@@ -392,6 +439,7 @@ export const CostRequestPage: FC = () => {
             const costImage = requestItem.image_url || requestItem.image_url || '';
             const costId = requestItem.cost_id || index;
             const costPrice = requestItem.cost_price || 0;
+            const isSavingCost = savingCostIds.has(costId);
 
             return (
               <div key={costId} className="request_conteiner">
@@ -436,32 +484,58 @@ export const CostRequestPage: FC = () => {
                               fontSize: '25px',
                               color: '#000',
                               outline: 'none',
-                              appearance: 'textfield',
-                              WebkitAppearance: 'textfield',
-                              MozAppearance: 'textfield',
                             }}
                             min="0"
                             step="0.01"
                             placeholder="0.00"
                           />
                         ) : (
-                          costPrice || "0.00"
+                          <div style={{
+                            width: '100%',
+                            textAlign: 'center',
+                            fontSize: '25px',
+                            color: '#000',
+                          }}>
+                            {costPrice || "0.00"}
+                          </div>
                         )}
                       </div>
                     </div>
                     {isDraft && (
-                      <img 
-                        src={`${dest_root}/bin.png`}
-                        style={{ 
-                          height: '45px', 
-                          width: '35px', 
-                          cursor: 'pointer', 
-                          marginLeft: '10%', 
-                          marginTop: '5%' 
-                        }} 
-                        alt="Удалить"
-                        onClick={() => handleDeleteCost(requestItem.cost_id)}
-                      />
+                      <>
+                        <button
+                          className="card_button"
+                          onClick={() => handleSaveCost(requestItem.cost_id, costTitle)}
+                          disabled={isSavingCost}
+                          style={{
+                            backgroundColor: '#007bff',
+                            color: '#FDF1E0',
+                            borderColor: '#007bff',
+                            height: '35px',
+                            fontSize: '12px',
+                            padding: '5px 10px',
+                            marginRight: '10px',
+                            marginTop: '5%',
+                            minWidth: '80px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          {isSavingCost ? "Сохранение..." : "Сохранить"}
+                        </button>
+                        <img 
+                          src={`${dest_root}/bin.png`}
+                          style={{ 
+                            height: '45px', 
+                            width: '35px', 
+                            cursor: 'pointer', 
+                            marginTop: '5%' 
+                          }} 
+                          alt="Удалить"
+                          onClick={() => handleDeleteCost(requestItem.cost_id)}
+                        />
+                      </>
                     )}
                   </div>
                 </div>
@@ -491,7 +565,7 @@ export const CostRequestPage: FC = () => {
               paddingLeft: '10px'
             }}
           >
-            {isSaving ? "Сохранение..." : "Сохранить"}
+            {isSaving ? "Сохранение..." : "Сохранить все"}
           </button>
 
           <button
